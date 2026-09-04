@@ -13,7 +13,7 @@ Swift/AppKit 独立 macOS 额度悬浮徽标，当前版本 **2.1（build 12）*
 
 ## 复刻与状态预览
 
-[QuotaDock 的 X 短文：介绍、复刻提示词与效果图](docs/quota-dock-x-post.md)。下图为六种合成额度状态，徽标复用原生绘制代码，头像沿用用户提供的示例，账号栏按参考样式模拟；不代表实时额度。
+[QuotaDock 的 X 短文：介绍、复刻提示词与效果图](docs/quota-dock-x-post.md)。下图沿用用户提供的账号栏截图，以原始尺寸展示六种模拟额度。徽标复用原生绘制代码，不代表实时额度。
 
 ![QuotaDock 六种额度状态](docs/images/quota-states.png)
 
