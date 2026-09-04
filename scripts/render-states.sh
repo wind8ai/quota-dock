@@ -12,4 +12,5 @@ cat "$project_dir/scripts/state-preview.swift" >> "$preview_dir/main.swift"
 xcrun swiftc -target "$(uname -m)-apple-macosx11.0" \
     "$project_dir/Sources/QuotaCore/BadgeLayout.swift" "$preview_dir/main.swift" \
     -o "$preview_dir/render-states"
-"$preview_dir/render-states" "$project_dir/docs/images/quota-states.png"
+"$preview_dir/render-states" "$project_dir/docs/images/quota-states.png" \
+    "$project_dir/docs/images/account-bar-reference.png"

@@ -1,5 +1,7 @@
 // Appended to the production QuotaBadgeView by render-states.sh.
-// All percentages and account-bar surroundings below are synthetic.
+// Percentages and account-bar surroundings are synthetic; the avatar uses the supplied reference.
+
+private let accountReference = NSImage(contentsOfFile: CommandLine.arguments[2])!
 
 private func label(_ text: String, x: CGFloat, y: CGFloat, size: CGFloat,
                    color: NSColor, weight: NSFont.Weight = .regular) {
@@ -18,7 +20,14 @@ private func accountBar(percent: Int?, x: CGFloat, y: CGFloat) {
     NSColor(calibratedWhite: 0.17, alpha: 1).setFill()
     NSBezierPath(roundedRect: NSRect(x: 8, y: 8, width: 272, height: 32),
                  xRadius: 10, yRadius: 10).fill()
-    label("🧭", x: 15, y: 13, size: 16, color: .white)
+    // The supplied 336×48 reference has an 18×18 avatar at top-left (15, 16).
+    // NSImage source rectangles use a bottom-left origin. Keep the original pixels.
+    NSGraphicsContext.saveGraphicsState()
+    NSBezierPath(ovalIn: NSRect(x: 15, y: 15, width: 18, height: 18)).addClip()
+    accountReference.draw(in: NSRect(x: 15, y: 15, width: 18, height: 18),
+                          from: NSRect(x: 15, y: 14, width: 18, height: 18),
+                          operation: .sourceOver, fraction: 1)
+    NSGraphicsContext.restoreGraphicsState()
     label("wind8", x: 42, y: 13, size: 16, color: .white)
     let help = NSBezierPath(ovalIn: NSRect(x: 298, y: 17, width: 13, height: 13))
     NSColor(calibratedWhite: 0.52, alpha: 1).setStroke()
@@ -60,7 +69,7 @@ for (index, state) in states.enumerated() {
           color: NSColor(calibratedWhite: 0.7, alpha: 1))
     accountBar(percent: state.1, x: x, y: y)
 }
-label("徽标使用 QuotaDock 原生绘制代码；账号栏为参考图样式的模拟。", x: 32, y: 20,
+label("头像沿用提供的示例；徽标使用原生绘制代码，额度为模拟。", x: 32, y: 20,
       size: 11, color: NSColor(calibratedWhite: 0.5, alpha: 1))
 NSGraphicsContext.restoreGraphicsState()
 let destination = URL(fileURLWithPath: CommandLine.arguments[1])
