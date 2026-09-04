@@ -43,7 +43,7 @@ private func accountBar(percent: Int?, x: CGFloat, y: CGFloat) {
     NSGraphicsContext.restoreGraphicsState()
 }
 
-let canvas = NSSize(width: 768, height: 404)
+let canvas = NSSize(width: 768, height: 378)
 let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil,
     pixelsWide: Int(canvas.width * 2), pixelsHigh: Int(canvas.height * 2),
     bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
@@ -54,8 +54,8 @@ NSGraphicsContext.current = context
 context.cgContext.scaleBy(x: 2, y: 2)
 NSColor(calibratedWhite: 0.085, alpha: 1).setFill()
 NSBezierPath(rect: NSRect(origin: .zero, size: canvas)).fill()
-label("QuotaDock · 额度状态", x: 32, y: 351, size: 24, color: .white, weight: .semibold)
-label("账号栏展示模拟 · 非实时额度", x: 32, y: 324, size: 12,
+label("QuotaDock · 额度状态", x: 32, y: 325, size: 24, color: .white, weight: .semibold)
+label("账号栏展示模拟 · 非实时额度", x: 32, y: 298, size: 12,
       color: NSColor(calibratedWhite: 0.58, alpha: 1))
 let states: [(String, Int?)] = [
     ("满额 / 新周期", 100), ("充足 · ≥50%", 64),
@@ -64,13 +64,11 @@ let states: [(String, Int?)] = [
 ]
 for (index, state) in states.enumerated() {
     let x = CGFloat(32 + (index % 2) * 368)
-    let y = CGFloat(246 - (index / 2) * 94)
+    let y = CGFloat(220 - (index / 2) * 94)
     label(state.0, x: x, y: y + 53, size: 12,
           color: NSColor(calibratedWhite: 0.7, alpha: 1))
     accountBar(percent: state.1, x: x, y: y)
 }
-label("头像沿用提供的示例；徽标使用原生绘制代码，额度为模拟。", x: 32, y: 20,
-      size: 11, color: NSColor(calibratedWhite: 0.5, alpha: 1))
 NSGraphicsContext.restoreGraphicsState()
 let destination = URL(fileURLWithPath: CommandLine.arguments[1])
 try bitmap.representation(using: .png, properties: [:])!.write(to: destination)
