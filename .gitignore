@@ -1,0 +1,12 @@
+.DS_Store
+/.build/
+/.swiftpm/
+/build/
+/dist/
+/artifacts/
+*.app/
+*.zip
+*.dSYM/
+*.p12
+*.p8
+*.mobileprovision

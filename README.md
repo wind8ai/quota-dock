@@ -13,29 +13,31 @@ Swift/AppKit 独立 macOS 额度悬浮徽标，当前版本 **2.1（build 12）*
 
 ## 开发与构建
 
-需要 macOS 11+、Apple Command Line Tools 或 Xcode，Swift 5.3+。直接使用 `swiftc`，不要求完整 Xcode 或 XCTest runtime；无第三方依赖；命令从 monorepo 根目录运行，也可以在其他目录使用脚本的绝对路径。
+需要 macOS 11+、Apple Command Line Tools 或 Xcode，Swift 5.3+。直接使用 `swiftc`，不要求完整 Xcode 或 XCTest runtime；无第三方依赖。
+
+源码维护于私有 monorepo [wind8ai/codex-tools](https://github.com/wind8ai/codex-tools) 的 `projects/quota-dock`。私有独立仓库 [wind8ai/quota-dock](https://github.com/wind8ai/quota-dock) 通过 subtree split 同步，不在项目目录中创建子仓。以下命令均在项目根目录执行：monorepo 中先进入 `projects/quota-dock`，独立 clone 中使用仓库根目录；也可以在其他目录使用脚本的绝对路径。
 
 ```sh
-projects/quota-dock/scripts/test.sh
-projects/quota-dock/scripts/build.sh
-projects/quota-dock/scripts/sign.sh
+./scripts/test.sh
+./scripts/build.sh
+./scripts/sign.sh
 ```
 
-`build.sh` 编译本机架构的 release 可执行文件，组装到 `projects/quota-dock/build/QuotaDock.app`；每次重新构建后需要重新签名。`sign.sh` 默认使用 ad-hoc 签名用于本机运行，校验签名后打印签名信息。
+`build.sh` 编译本机架构的 release 可执行文件，组装到项目的 `build/QuotaDock.app`；每次重新构建后需要重新签名。`sign.sh` 默认使用 ad-hoc 签名用于本机运行，校验签名后打印签名信息。
 
 完整验证、构建、签名、打包：
 
 ```sh
-projects/quota-dock/scripts/package.sh
+./scripts/package.sh
 ```
 
-输出到 `projects/quota-dock/dist/`：`QuotaDock-2.1-12-<arch>.zip`、对应 `.sha256` 和 `.build-info.txt`。构建记录包含源码提交、脏状态、Swift/SDK/macOS 和签名身份。相同输入可重复执行流程；不承诺跨 SDK、签名时间戳或 ZIP 元数据的逐字节一致。当前脚本构建本机单一架构，不声称是 universal binary。
+输出到项目的 `dist/`：`QuotaDock-2.1-12-<arch>.zip`、对应 `.sha256` 和 `.build-info.txt`。构建记录包含源码提交、脏状态、Swift/SDK/macOS 和签名身份。相同输入可重复执行流程；不承诺跨 SDK、签名时间戳或 ZIP 元数据的逐字节一致。当前脚本构建本机单一架构，不声称是 universal binary。
 
 指定现有签名证书：
 
 ```sh
 SIGNING_IDENTITY='Developer ID Application: YOUR NAME (TEAMID)' \
-  projects/quota-dock/scripts/package.sh
+  ./scripts/package.sh
 ```
 
 证书模式启用 hardened runtime 和安全时间戳；脚本不会创建证书、上传或自动 notarize。对外分发还需完成 Apple notarization，参见 [发布规则](docs/releasing.md)。
@@ -48,10 +50,10 @@ SIGNING_IDENTITY='Developer ID Application: YOUR NAME (TEAMID)' \
 ps -axo pid,command | grep -E '[C]odexQuotaBadge|[Q]uotaDock'
 ```
 
-确认新构建和测试通过后，在活动监视器中结束旧 `CodexQuotaBadge`，再双击新 `QuotaDock.app`，或从仓库根目录执行：
+确认新构建和测试通过后，在活动监视器中结束旧 `CodexQuotaBadge`，再双击新 `QuotaDock.app`，或从项目根目录执行：
 
 ```sh
-open projects/quota-dock/build/QuotaDock.app
+open build/QuotaDock.app
 ```
 
 退出新版：在活动监视器中结束 `QuotaDock`，或 `pkill -x QuotaDock`。不自动添加登录项，重启后需再次启动。若手工登录项指向旧路径，正式切换时再更新它。
