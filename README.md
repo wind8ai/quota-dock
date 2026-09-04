@@ -11,6 +11,14 @@ Swift/AppKit 独立 macOS 额度悬浮徽标，当前版本 **2.1（build 12）*
 - 绿色表示 ≥50%，琥珀色表示 20–49%，红色表示 <20%。徽标不拦截鼠标，不出现在 Dock 中。
 - 每 0.05 秒跟随符合条件的窗口位置。识别窗口所有者 `ChatGPT` / `Codex`、宽 ≥800 pt、高 ≥600 pt；未找到目标时隐藏。坐标按所在显示器转换，不读取屏幕像素。
 
+## 复刻与状态预览
+
+[一段可直接交给 Codex 的复刻提示词](docs/recreate-prompt.md)。下图为六种合成额度状态，徽标复用原生绘制代码，账号栏按参考样式模拟；不代表实时额度。
+
+![QuotaDock 六种额度状态](docs/images/quota-states.png)
+
+在项目根目录执行 `./scripts/render-states.sh` 可重新生成此图，不读取会话、不写额度缓存，也不启动悬浮窗。
+
 ## 开发与构建
 
 需要 macOS 11+、Apple Command Line Tools 或 Xcode，Swift 5.3+。直接使用 `swiftc`，不要求完整 Xcode 或 XCTest runtime；无第三方依赖。
