@@ -1,1 +1,0 @@
-请用 Swift/AppKit 开发 macOS 悬浮额度徽标 QuotaDock：贴在 ChatGPT/Codex 主窗口左下角账号名右侧，大小 64×30 pt、距窗口左侧 96 pt、底部 8 pt，跟随窗口且不拦截鼠标；每 30 秒读取 `~/.codex/sessions` 最新回执，只显示 `limit_id=codex` 的 `primary` 剩余额度，过滤 Spark；≥50% 绿色、20–49% 琥珀色、<20% 红色，无数据且无缓存时显示灰色 `--%`；缓存跨重启保留，以 `resets_at` 区分周期并容忍 120 秒抖动，同周期只降、新周期可回升；无需宠物，附测试及可重复执行的构建、ad-hoc 签名和 ZIP 打包脚本。
