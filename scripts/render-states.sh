@@ -12,3 +12,14 @@ xcrun swiftc -target "$(uname -m)-apple-macosx11.0" \
     -o "$preview_dir/render-states"
 "$preview_dir/render-states" "$project_dir/docs/images/quota-states-v3.png" \
     "$project_dir/docs/images/account-bar-v3-reference.png"
+if [[ "${1:-}" == '--animate' ]]; then
+    command -v ffmpeg >/dev/null || { echo 'Animated export requires ffmpeg.' >&2; exit 1; }
+    mkdir -p "$preview_dir/frames"
+    "$preview_dir/render-states" "$preview_dir/frames" \
+        "$project_dir/docs/images/account-bar-v3-reference.png" --frames
+    ffmpeg -hide_banner -loglevel error -y -framerate 12 \
+        -i "$preview_dir/frames/frame-%03d.png" \
+        -filter_complex '[0:v]split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a' \
+        -loop 0 "$project_dir/docs/images/quota-motion-v3.gif"
+    printf '%s\n' "$project_dir/docs/images/quota-motion-v3.gif"
+fi
