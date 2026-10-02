@@ -1,29 +1,43 @@
-# 构建、签名与产物管理
+# 构建、签名与发布
 
-## 发布输入
+## 构建输入
 
-1. 在独立的 `codex-tools` 仓库中完成代码 review、测试和提交。只提交本项目及根仓配套文件。
-2. 版本和 build number 只维护在 `Resources/Info.plist`；发布新修改时更新版本/build。3.0/build 13 改为新版头像上方的竖直液体槽，沿用 2.1 的额度数据和缓存。3.0.1/build 14 修复开启 mini 时浮动窗口被误选为主窗口的问题，详见 [修复记录](mini-window-fix.md)。
-   3.0.2/build 15 保留回执小数，数值显示一位小数并省略百分号。字号提高为 11 pt 粗体，长数值按宽度缩小。旧整数缓存允许首次精确回执纠正小于 0.5 个百分点的舍入误差；写入精度标记后恢复同周期只下降，缓存键不变。
-   3.0.3/build 16 按用户最终要求显示整数，不带小数点或百分号，常规字号提高至 13 pt 重体。整条槽上移 2 pt，当前 Retina 屏幕约为 4 px；槽与头像顶部间距为 8 pt。
-3. 固定 macOS、Swift 与 SDK；使用 `DEVELOPER_DIR` 选择本机已安装的 Apple 工具链，记录其版本。无需下载第三方依赖。
-4. 执行 `scripts/package.sh`。它会依次测试、release 构建、签名验证、使用 `ditto` 打包、生成 SHA-256 和构建记录。任一步失败都不视为可发布产物；`dist` 中可能有上次产物，须核对构建记录与校验和。
+版本和 build number 只在 `Resources/Info.plist` 维护。发布前提交本项目改动，并记录 macOS、Swift、SDK 和目标架构。需要选择已安装的工具链时，通过 `DEVELOPER_DIR` 指定。
 
-## 签名与分发
+```sh
+./scripts/package.sh
+```
 
-- 默认 ad-hoc 签名与旧应用一致，供本机验证；不能等同于 Developer ID 签名或公证通过。
-- 有 Developer ID Application 证书时，通过 `SIGNING_IDENTITY` 指定证书名称或指纹；证书由本机 Keychain 管理，私钥和认证信息禁止提交。
-- 对外分发按照 Apple [Developer ID](https://developer.apple.com/developer-id/) 和 [notarization 文档](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution) 完成公证。当前本机旧工具链未配置 notarization，本轮不提交任何 Apple 公证请求。
-- 公证需要支持 `notarytool` 的工具链。上传已签名 ZIP 并获得 accepted 结果后，将票据 staple 到 `.app`，验证票据，然后重新用 `ditto -c -k --sequesterRsrc --keepParent` 打包并更新 SHA-256。不要再次运行 `package.sh` 覆盖已 staple 的应用。
-- ZIP 打包沿用 Apple [软件分发打包文档](https://developer.apple.com/documentation/xcode/packaging-mac-software-for-distribution) 的 `ditto --keepParent` 模式。
+脚本依次运行测试、release 构建、签名校验和 `ditto` 打包，输出到 `dist/`：
 
-## 产物归属
+- `QuotaDock-<version>-<build>-<arch>.zip`
+- 对应 `.sha256`
+- 对应 `.build-info.txt`，记录源码提交、工作区状态、工具链和签名身份
 
-- `build/`、`dist/`、`.build/`、`artifacts/` 和所有 `.app`/`.zip` 均被项目 `.gitignore` 排除，独立 clone 同样生效。Git 中不保存真实会话、额度缓存、实际额度运行截图、证书或旧二进制副本。用户明确要求用于文档展示的局部界面截图放在 `docs/images/`，额度使用合成状态，不包含聊天内容。
-- `.zip`、`.sha256`、`.build-info.txt` 作为同一组保存在后续明确的 release 或制品存储，不把“本地打包成功”当成已经发布。
-- monorepo 标签约定为 `quota-dock/v<version>`，独立仓库使用 `v<version>`；签名或公证方式、目标架构、源码提交及验证范围必须写入发布说明。3.0 本地包为 ad-hoc 签名。用户于 2026-10-02 明确授权先推送源码分支；实际窗口视觉确认及两个目标应用验收后，再创建 `quota-dock/v3.0`、`v3.0` 标签。二进制上传需要另行授权。
-- 脚本按本机架构输出；只有另行在目标架构构建并验证后，才能声明支持对应架构的发布包。不同工具链、路径、签名与压缩元数据可导致哈希不同。
+构建只针对本机架构，不生成 universal binary。ZIP、校验和、构建记录作为一组制品保留。脚本可重复运行，但不同 SDK、签名时间戳和压缩元数据可能产生不同哈希。
+
+## 签名
+
+默认使用 ad-hoc 签名供本机验证，不等同于 Developer ID 签名或 Apple 公证。
+
+已有 Developer ID Application 证书时：
+
+```sh
+SIGNING_IDENTITY='Developer ID Application: YOUR NAME (TEAMID)' ./scripts/package.sh
+```
+
+证书模式启用 hardened runtime 和安全时间戳。证书及私钥由本机 Keychain 管理，不进入 Git。
+
+对外发布二进制时，按 Apple [Developer ID](https://developer.apple.com/developer-id/) 和 [notarization 文档](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution) 完成公证。当前仓库没有已公证的二进制发布。
+
+公证 accepted 后，将票据 staple 到 `.app` 并验证，再重新用 `ditto -c -k --sequesterRsrc --keepParent` 打包和更新校验和。不要用 `package.sh` 覆盖已经 staple 的应用。
+
+## 仓库与制品
+
+公开源码位于 [wind8ai/quota-dock](https://github.com/wind8ai/quota-dock)。独立仓库标签使用 `v<version>`；维护 monorepo 的标签使用 `quota-dock/v<version>`。源码推送、版本标签和二进制发布是独立步骤，推送源码不表示对应二进制已发布。
+
+Git 保存源码、测试、脚本和文档展示素材。构建缓存、应用包、ZIP、真实会话、额度缓存和实际额度运行截图均被忽略。文档状态图使用合成额度，截图区域只包含液体槽和示例头像。
 
 ## 技术选择
 
-采用 Apple 工具链的 `swiftc` 编译和 Swift 原生 `precondition` 断言，以无优化模式执行测试。当前机器的 Swift 5.3 Command Line Tools 缺少 `xctest`，其 SwiftPM 构建也要求该工具，因此本项目不引入 SwiftPM/XCTest 依赖，也不保留双套构建路径。QuotaCore 是项目内部源码目录，不是独立发布的库；AppKit 入口与核心分离，用合成数据覆盖解析、周期与缓存规则。
+使用 Apple 工具链的 `swiftc` 和 Swift 原生断言执行测试，不需要 SwiftPM 或 XCTest runtime。测试以 `-Onone` 编译，断言失败返回非零退出码。核心数据及几何规则位于 `Sources/QuotaCore/`，AppKit 窗口和绘制位于 `Sources/QuotaDock/`。
