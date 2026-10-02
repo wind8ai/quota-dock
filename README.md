@@ -28,6 +28,8 @@ Swift/AppKit 独立 macOS 额度悬浮工具，当前版本 **3.0（build 13）*
 
 安装 FFmpeg 后，执行 `./scripts/render-states.sh --animate` 可导出六秒循环动图。执行 `./scripts/preview-animation.sh` 可打开独立预览窗口，每两秒循环切换合成额度，验证液位过渡；加 `--reduce-motion` 可预览静止效果，关闭预览窗口即可退出。预览不读真实回执、不写缓存。
 
+[X 上传用 GIF](docs/images/quota-motion-v3-x.gif) 缩为 1280 px 宽，原图保留；`--animate` 会同时生成此文件。X 支持循环 GIF，尺寸建议见 [官方媒体文档](https://docs.x.com/x-api/media/quickstart/best-practices)。
+
 [2.1 X 短文](docs/quota-dock-x-post.md) 和 [2.1 状态图](docs/images/quota-states.png) 作为旧版记录保留。
 
 ## 开发与构建
