@@ -3,7 +3,7 @@
 ## 发布输入
 
 1. 在独立的 `codex-tools` 仓库中完成代码 review、测试和提交。只提交本项目及根仓配套文件。
-2. 版本和 build number 只维护在 `Resources/Info.plist`；发布新修改时更新版本/build。本次 2.1/build 12 为原版工程化迁移，未新增产品功能。
+2. 版本和 build number 只维护在 `Resources/Info.plist`；发布新修改时更新版本/build。3.0/build 13 改为新版头像上方的竖直液体槽，沿用 2.1 的额度数据和缓存。
 3. 固定 macOS、Swift 与 SDK；使用 `DEVELOPER_DIR` 选择本机已安装的 Apple 工具链，记录其版本。无需下载第三方依赖。
 4. 执行 `scripts/package.sh`。它会依次测试、release 构建、签名验证、使用 `ditto` 打包、生成 SHA-256 和构建记录。任一步失败都不视为可发布产物；`dist` 中可能有上次产物，须核对构建记录与校验和。
 
@@ -19,7 +19,7 @@
 
 - `build/`、`dist/`、`.build/`、`artifacts/` 和所有 `.app`/`.zip` 均被项目 `.gitignore` 排除，独立 clone 同样生效。Git 中不保存真实会话、额度缓存、用户截图、证书或旧二进制副本。
 - `.zip`、`.sha256`、`.build-info.txt` 作为同一组保存在后续明确的 release 或制品存储，不把“本地打包成功”当成已经发布。
-- monorepo 标签约定为 `quota-dock/v<version>`，独立仓库使用 `v<version>`；签名或公证方式、目标架构、源码提交及验证范围必须写入发布说明。首次 GitHub 推送只发布两个私有仓库的 `main` 源码分支，不创建发布标签或上传二进制产物。
+- monorepo 标签约定为 `quota-dock/v<version>`，独立仓库使用 `v<version>`；签名或公证方式、目标架构、源码提交及验证范围必须写入发布说明。3.0 本地包为 ad-hoc 签名。实际窗口视觉确认及两个目标应用验收后，才推送源码及 `quota-dock/v3.0`、`v3.0` 标签；二进制上传需要另行授权。
 - 脚本按本机架构输出；只有另行在目标架构构建并验证后，才能声明支持对应架构的发布包。不同工具链、路径、签名与压缩元数据可导致哈希不同。
 
 ## 技术选择
