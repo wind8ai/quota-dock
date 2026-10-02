@@ -1,9 +1,10 @@
 import Foundation
 
 final class QuotaDisplayValueTests {
-    func testOneDecimalWithoutPercentSign() {
-        for (value, expected) in [(100.0, "100.0"), (64.0, "64.0"), (64.34, "64.3"),
-                                  (32.86, "32.9"), (0.0, "0.0")] {
+    func testIntegerWithoutPercentSign() {
+        for (value, expected) in [(100.0, "100"), (64.0, "64"), (64.34, "64"),
+                                  (32.86, "33"), (64.5, "65"), (0.0, "0"),
+                                  (-10.0, "0"), (110.0, "100")] {
             precondition(QuotaDisplayValue.text(for: value) == expected)
         }
     }

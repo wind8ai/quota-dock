@@ -4,7 +4,7 @@ enum BadgeLayout {
     static let size = CGSize(width: 32, height: 96)
     static let avatarCenterX: CGFloat = 26
     static let avatarTopFromBottom: CGFloat = 37
-    static let avatarGap: CGFloat = 6
+    static let avatarGap: CGFloat = 8
 
     /// Quartz coordinates have a downward-pointing y axis.
     static func quartzTopLeft(in window: CGRect) -> CGPoint {
