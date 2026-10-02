@@ -1,23 +1,20 @@
 # QuotaDock
 
-Swift/AppKit 独立 macOS 额度悬浮徽标，当前版本 **2.1（build 12）**。原工具名为 CodexQuotaBadge。
+Swift/AppKit 独立 macOS 额度悬浮工具，当前版本 **3.0（build 13）**。原工具名为 CodexQuotaBadge。
 
-徽标贴在 ChatGPT/Codex 主窗口左下角、账号名右侧。窗口左侧偏移 **96 pt**，底部间距 **8 pt**，徽标大小 **64 × 30 pt**；这些数值沿用已确认的视觉对齐。不依赖宠物，也不修改 ChatGPT/Codex 应用包。
+竖直玻璃胶囊位于新版 ChatGPT/Codex 左下角头像正上方，大小为 **32 × 96 pt**。当前实测头像中心距窗口左侧 **26 pt**，底边距头像顶部 **6 pt**，即面板左侧偏移 **10 pt**、底部偏移 **43 pt**。不依赖宠物，也不修改 ChatGPT/Codex 应用包。3.0 只使用新版布局，旧横向徽标已移除。
 
 - 每 30 秒读取 `~/.codex/sessions` 下最近修改的 12 个 JSONL 文件，每个最多读取末尾 2 MB。
 - 只接受 `event_msg / token_count` 中 `limit_id == "codex"` 的 `primary` 额度，过滤 Spark 独立额度；支持直接及 `info.rate_limits` 两种记录形式。显示的是 `100 - used_percent`，四舍五入并限制在 0–100。
 - 以 `resets_at` 区分周期，同一周周期允许 120 秒的时间抖动。跨文件先选最新周期，再选该周期中最新观测；同一周期内缓存只下降，新周期允许回升。
 - 缓存跨重启保留，最多保存 5 条记录。暂时没有可读回执时沿用缓存；无缓存时显示 `--%`。不直接请求额度服务，因此显示值可能滞后于当前账号状态。
-- 绿色表示 ≥50%，琥珀色表示 20–49%，红色表示 <20%。徽标不拦截鼠标，不出现在 Dock 中。
-- 每 0.05 秒跟随符合条件的窗口位置。识别窗口所有者 `ChatGPT` / `Codex`、宽 ≥800 pt、高 ≥600 pt；未找到目标时隐藏。坐标按所在显示器转换，不读取屏幕像素。
+- 液体从底部填充，液面高度对应剩余额度。绿色表示 ≥50%，琥珀色表示 20–49%，红色表示 <20%。底部为 8 pt 白色等宽数字，配轻微阴影，没有数值底板。`0%` 保留红色细线，无数据且无缓存时为空槽 `--%`。
+- 液位变化用约 0.6 秒缓动。液面前后两层起伏，三个带高光的气泡上浮并轻微左右摆动。位置与动画共用 0.05 秒定时器；目标隐藏时暂停动画。系统开启“减少动态效果”时立即更新液位，保持液面和气泡静止。
+- 识别窗口所有者 `ChatGPT` / `Codex`、宽 ≥800 pt、高 ≥600 pt；未找到屏幕上的目标时隐藏。坐标按槽体所在显示器转换。面板鼠标穿透，不出现在 Dock 中。
 
 ## 复刻与状态预览
 
-[QuotaDock 的 X 短文：介绍、复刻提示词与效果图](docs/quota-dock-x-post.md)。下图沿用用户提供的账号栏截图，以原始尺寸展示六种模拟额度。徽标复用原生绘制代码，不代表实时额度。
-
-![QuotaDock 六种额度状态](docs/images/quota-states.png)
-
-上图为保留的 2.1 状态图。3.0 正在设计中，以下为头像上方竖直液体槽的静态预览，尚未接入应用。
+[3.0 X 短文与复刻提示词](docs/quota-dock-v3-x-post.md)。以下使用生产 View 展示六种模拟额度。
 
 ![QuotaDock 3.0 六种液体槽状态](docs/images/quota-states-v3.png)
 
@@ -25,7 +22,9 @@ Swift/AppKit 独立 macOS 额度悬浮徽标，当前版本 **2.1（build 12）*
 
 ![QuotaDock 3.0 液面与气泡动画预览](docs/images/quota-motion-v3.gif)
 
-安装 FFmpeg 后，执行 `./scripts/render-states.sh --animate` 可导出六秒循环动图。动图使用生产 View 的相位变化，尚未接入真实窗口的动画时钟。
+安装 FFmpeg 后，执行 `./scripts/render-states.sh --animate` 可导出六秒循环动图。执行 `./scripts/preview-animation.sh` 可打开独立预览窗口，每两秒循环切换合成额度，验证液位过渡；加 `--reduce-motion` 可预览静止效果，关闭预览窗口即可退出。预览不读真实回执、不写缓存。
+
+[2.1 X 短文](docs/quota-dock-x-post.md) 和 [2.1 状态图](docs/images/quota-states.png) 作为旧版记录保留。
 
 ## 开发与构建
 
@@ -47,7 +46,7 @@ Swift/AppKit 独立 macOS 额度悬浮徽标，当前版本 **2.1（build 12）*
 ./scripts/package.sh
 ```
 
-输出到项目的 `dist/`：`QuotaDock-2.1-12-<arch>.zip`、对应 `.sha256` 和 `.build-info.txt`。构建记录包含源码提交、脏状态、Swift/SDK/macOS 和签名身份。相同输入可重复执行流程；不承诺跨 SDK、签名时间戳或 ZIP 元数据的逐字节一致。当前脚本构建本机单一架构，不声称是 universal binary。
+输出到项目的 `dist/`：`QuotaDock-3.0-13-<arch>.zip`、对应 `.sha256` 和 `.build-info.txt`。构建记录包含源码提交、脏状态、Swift/SDK/macOS 和签名身份。相同输入可重复执行流程；不承诺跨 SDK、签名时间戳或 ZIP 元数据的逐字节一致。当前脚本构建本机单一架构，不声称是 universal binary。
 
 指定现有签名证书：
 
@@ -82,6 +81,7 @@ open build/QuotaDock.app
 
 ```text
 Sources/QuotaDock/main.swift    AppKit 绘制、窗口追踪、定时刷新
+Sources/QuotaDock/QuotaMeterView.swift  液体槽绘制
 Sources/QuotaCore/              额度解析、缓存稳定器、定位数值
 Tests/QuotaCoreTests/           合成回执与隔离 UserDefaults 测试
 Resources/Info.plist            应用元数据及版本唯一来源
@@ -90,4 +90,4 @@ docs/                          迁移证据及发布管理规则
 build/  dist/  .build/          本地生成，不入 Git
 ```
 
-测试脚本用 `swiftc -Onone` 编译核心源码及测试入口，执行 19 个使用 Swift 原生 `precondition` 的回归用例；断言失败或抛错会返回非零退出码。测试不读取真实账号回执，不写应用的正式缓存域。UI 实际跟随、遮挡、跨屏及视觉对齐仍需人工验收；窗口标题或尺寸规则无法覆盖的布局会影响定位。额度读取保留 2.1 的实现边界：只查最近 12 个文件、尾部必须能解码为 UTF-8、时间戳解析失败使用文件修改时间；账号切换没有独立缓存分区。
+测试脚本用 `swiftc -Onone` 编译核心源码及测试入口，执行 24 个使用 Swift 原生 `precondition` 的回归用例，覆盖额度读取、缓存、头像锚点、液位过渡、隐藏暂停和减少动态效果；断言失败或抛错会返回非零退出码。测试不读取真实账号回执，不写应用的正式缓存域。UI 实际跟随、遮挡、跨屏及视觉对齐仍需人工验收；窗口标题或尺寸规则无法覆盖的布局会影响定位。额度读取保留 2.1 的实现边界：只查最近 12 个文件、尾部必须能解码为 UTF-8、时间戳解析失败使用文件修改时间；账号切换没有独立缓存分区。

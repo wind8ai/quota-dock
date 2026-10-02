@@ -8,6 +8,8 @@ trap 'rm -rf "$preview_dir"' EXIT
 # Compile the production view directly without application timers or quota reads.
 cp "$project_dir/scripts/state-preview.swift" "$preview_dir/main.swift"
 xcrun swiftc -target "$(uname -m)-apple-macosx11.0" \
+    "$project_dir/Sources/QuotaCore/BadgeLayout.swift" \
+    "$project_dir/Sources/QuotaCore/QuotaMeterAnimation.swift" \
     "$project_dir/Sources/QuotaDock/QuotaMeterView.swift" "$preview_dir/main.swift" \
     -o "$preview_dir/render-states"
 "$preview_dir/render-states" "$project_dir/docs/images/quota-states-v3.png" \

@@ -48,4 +48,17 @@ for (name, test) in layoutTests {
     print("PASS \(name)")
 }
 
-print("All \(readerTests.count + stabilizerTests.count + layoutTests.count) tests passed.")
+let animation = QuotaMeterAnimationTests()
+let animationTests: [(String, () -> Void)] = [
+    ("testTransitionReachesTargetInSixTenths", animation.testTransitionReachesTargetInSixTenths),
+    ("testHiddenStatePausesTransitionAndBubbles", animation.testHiddenStatePausesTransitionAndBubbles),
+    ("testReducedMotionSnapsLevelAndFreezesPhase", animation.testReducedMotionSnapsLevelAndFreezesPhase),
+    ("testRetargetingStartsAtCurrentLevel", animation.testRetargetingStartsAtCurrentLevel),
+    ("testZeroAndUnknownStopAmbientAnimation", animation.testZeroAndUnknownStopAmbientAnimation)
+]
+for (name, test) in animationTests {
+    test()
+    print("PASS \(name)")
+}
+
+print("All \(readerTests.count + stabilizerTests.count + layoutTests.count + animationTests.count) tests passed.")

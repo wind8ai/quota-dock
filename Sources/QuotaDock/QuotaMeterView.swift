@@ -2,15 +2,32 @@ import AppKit
 
 /// Shared by the application and the deterministic state preview.
 final class QuotaMeterView: NSView {
-    static let size = NSSize(width: 32, height: 96)
+    static let size = BadgeLayout.size
+    private var animation = QuotaMeterAnimation()
+    private var lastTick: TimeInterval?
 
     var remainingPercent: Int? {
-        didSet { needsDisplay = true }
+        get { animation.targetPercent }
+        set { setPercent(newValue, animated: false) }
     }
 
     /// Fixed for static previews; the application's animation clock will advance it.
-    var phase: Double = 0 {
-        didSet { needsDisplay = true }
+    var phase: Double {
+        get { animation.phase }
+        set { animation.phase = newValue; needsDisplay = true }
+    }
+
+    func setPercent(_ value: Int?, animated: Bool) {
+        animation.setTarget(value, animated: animated)
+        needsDisplay = true
+    }
+
+    func tick(at now: TimeInterval, visible: Bool, reducedMotion: Bool) {
+        let delta = lastTick.map { min(0.1, max(0, now - $0)) } ?? 0
+        lastTick = now
+        if animation.advance(by: delta, visible: visible, reducedMotion: reducedMotion) {
+            needsDisplay = true
+        }
     }
 
     override var isOpaque: Bool { false }
@@ -35,7 +52,7 @@ final class QuotaMeterView: NSView {
         NSColor(calibratedWhite: 0.025, alpha: 0.60).setFill()
         chamber.fill()
 
-        if let percent = remainingPercent {
+        if let percent = animation.displayedPercent {
             drawLiquid(percent: max(0, min(100, percent)), in: chamberRect, clip: chamber)
         }
 
@@ -56,7 +73,7 @@ final class QuotaMeterView: NSView {
         NSBezierPath(roundedRect: rect, xRadius: rect.width / 2, yRadius: rect.width / 2)
     }
 
-    private func drawLiquid(percent: Int, in rect: NSRect, clip: NSBezierPath) {
+    private func drawLiquid(percent: Double, in rect: NSRect, clip: NSBezierPath) {
         NSGraphicsContext.saveGraphicsState()
         clip.addClip()
         let surfaceY = rect.minY + rect.height * CGFloat(percent) / 100
