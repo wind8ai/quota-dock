@@ -23,6 +23,10 @@ Swift/AppKit 独立 macOS 额度悬浮徽标，当前版本 **2.1（build 12）*
 
 在项目根目录执行 `./scripts/render-states.sh` 可重新生成 3.0 状态图，不读取会话、不写额度缓存，也不启动悬浮窗。
 
+![QuotaDock 3.0 液面与气泡动画预览](docs/images/quota-motion-v3.gif)
+
+安装 FFmpeg 后，执行 `./scripts/render-states.sh --animate` 可导出六秒循环动图。动图使用生产 View 的相位变化，尚未接入真实窗口的动画时钟。
+
 ## 开发与构建
 
 需要 macOS 11+、Apple Command Line Tools 或 Xcode，Swift 5.3+。直接使用 `swiftc`，不要求完整 Xcode 或 XCTest runtime；无第三方依赖。

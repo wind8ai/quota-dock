@@ -60,22 +60,37 @@ final class QuotaMeterView: NSView {
         NSGraphicsContext.saveGraphicsState()
         clip.addClip()
         let surfaceY = rect.minY + rect.height * CGFloat(percent) / 100
+        // A rear wave gives the surface depth without changing the mean quota height.
+        let rear = NSBezierPath()
+        rear.move(to: NSPoint(x: rect.minX, y: rect.minY))
+        rear.line(to: NSPoint(x: rect.maxX, y: rect.minY))
+        let amplitude: CGFloat = (1..<100).contains(percent) ? min(1.45, rect.height * CGFloat(percent) / 350) : 0
+        for step in 0...40 {
+            let fraction = Double(step) / 40
+            let wave = sin(fraction * .pi * 2 - phase + 1.1) * Double(amplitude)
+            rear.line(to: NSPoint(x: rect.maxX - CGFloat(fraction) * rect.width,
+                                 y: surfaceY + CGFloat(wave) + amplitude * 0.45))
+        }
+        rear.close()
+        liquidColor.withAlphaComponent(0.42).setFill()
+        rear.fill()
+
         let fill = NSBezierPath()
         fill.move(to: NSPoint(x: rect.minX, y: rect.minY))
         fill.line(to: NSPoint(x: rect.maxX, y: rect.minY))
         let surface = NSBezierPath()
         // Keep endpoint states exact; the zero marker is drawn separately below.
-        let amplitude: CGFloat = (1..<100).contains(percent) ? 0.65 : 0
-        for step in 0...26 {
-            let fraction = CGFloat(step) / 26
+        for step in 0...40 {
+            let fraction = CGFloat(step) / 40
             let x = rect.maxX - fraction * rect.width
-            let wave = sin(Double(fraction) * .pi * 2 + phase) * Double(amplitude)
+            let wave = (sin(Double(fraction) * .pi * 2 + phase)
+                        + 0.22 * sin(Double(fraction) * .pi * 4 - phase)) * Double(amplitude)
             let point = NSPoint(x: x, y: surfaceY + CGFloat(wave))
             fill.line(to: point)
             if step == 0 { surface.move(to: point) } else { surface.line(to: point) }
         }
         fill.close()
-        NSGradient(starting: liquidColor.blended(withFraction: 0.56, of: .black)!,
+        NSGradient(starting: liquidColor.blended(withFraction: 0.48, of: .black)!,
                    ending: liquidColor)?.draw(in: fill, angle: 90)
         liquidColor.blended(withFraction: 0.36, of: .white)!.withAlphaComponent(0.9).setStroke()
         surface.lineWidth = 0.7
@@ -84,25 +99,32 @@ final class QuotaMeterView: NSView {
         if percent > 0 {
             NSGraphicsContext.saveGraphicsState()
             fill.addClip()
-            let bubbles: [(CGFloat, Double, CGFloat)] = [(0.28, 0.19, 1.6), (0.65, 0.48, 2.0), (0.42, 0.78, 1.1)]
+            let liquidHeight = rect.height * CGFloat(percent) / 100
+            let bubbles: [(CGFloat, Double, CGFloat)] = [(0.27, 0.19, 1.65), (0.68, 0.48, 2.15), (0.43, 0.78, 1.1)]
             for (xFraction, offset, radius) in bubbles {
-                let travel = (offset + phase / 18).truncatingRemainder(dividingBy: 1)
-                let center = NSPoint(x: rect.minX + rect.width * xFraction,
-                                     y: rect.minY + rect.height * CGFloat(travel))
+                let travel = (offset + phase / (.pi * 2)).truncatingRemainder(dividingBy: 1)
+                let sway = sin(phase + offset * .pi * 2) * 1.2
+                let center = NSPoint(x: rect.minX + rect.width * xFraction + CGFloat(sway),
+                                     y: rect.minY - radius * 2 + (liquidHeight + radius * 4) * CGFloat(travel))
                 let bubble = NSBezierPath(ovalIn: NSRect(x: center.x - radius, y: center.y - radius,
                                                        width: radius * 2, height: radius * 2))
-                NSColor.white.withAlphaComponent(0.08).setFill()
+                NSColor.white.withAlphaComponent(0.12).setFill()
                 bubble.fill()
-                NSColor.white.withAlphaComponent(0.33).setStroke()
-                bubble.lineWidth = 0.45
+                NSColor.white.withAlphaComponent(0.54).setStroke()
+                bubble.lineWidth = 0.55
                 bubble.stroke()
+                let glint = NSBezierPath(ovalIn: NSRect(x: center.x - radius * 0.6,
+                                                      y: center.y + radius * 0.15,
+                                                      width: radius * 0.55, height: radius * 0.55))
+                NSColor.white.withAlphaComponent(0.72).setFill()
+                glint.fill()
             }
             NSGraphicsContext.restoreGraphicsState()
         }
         NSGraphicsContext.restoreGraphicsState()
 
         if percent == 0 {
-            // A hairline follows the lower bowl, remaining visible below the number plate.
+            // A hairline follows the lower bowl below the percentage.
             let marker = NSBezierPath()
             marker.move(to: NSPoint(x: rect.minX + 2, y: rect.minY + 6))
             marker.curve(to: NSPoint(x: rect.maxX - 2, y: rect.minY + 6),
@@ -117,20 +139,22 @@ final class QuotaMeterView: NSView {
     private func drawPercent(in rect: NSRect, clip: NSBezierPath) {
         NSGraphicsContext.saveGraphicsState()
         clip.addClip()
-        let plate = NSRect(x: rect.minX, y: rect.minY + 5, width: rect.width, height: 22)
-        NSGradient(starting: NSColor.black.withAlphaComponent(0.66),
-                   ending: NSColor.black.withAlphaComponent(0.16))?.draw(in: plate, angle: 90)
+        let shadow = NSShadow()
+        shadow.shadowColor = NSColor.black.withAlphaComponent(0.85)
+        shadow.shadowBlurRadius = 2
+        shadow.shadowOffset = NSSize(width: 0, height: -0.5)
         let text = remainingPercent.map { "\(max(0, min(100, $0)))%" } ?? "--%"
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.monospacedDigitSystemFont(ofSize: 9, weight: .semibold),
             .foregroundColor: NSColor.white.withAlphaComponent(0.96),
-            .paragraphStyle: paragraph
+            .paragraphStyle: paragraph,
+            .shadow: shadow
         ]
         let string = NSAttributedString(string: text, attributes: attributes)
         let height = string.size().height
-        string.draw(in: NSRect(x: rect.minX - 1, y: plate.midY - height / 2,
+        string.draw(in: NSRect(x: rect.minX - 1, y: rect.minY + 16 - height / 2,
                               width: rect.width + 2, height: height))
         NSGraphicsContext.restoreGraphicsState()
     }
