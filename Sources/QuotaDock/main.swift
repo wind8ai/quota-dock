@@ -38,7 +38,7 @@ private final class AccountBarWindowTracker {
     private func liveMainWindowBounds() -> CGRect? {
         if let windowID = windowID,
            let window = description(for: windowID),
-           let bounds = validatedBounds(from: window) {
+           let bounds = AccountWindowSelector.bounds(from: window) {
             return bounds
         }
 
@@ -47,13 +47,9 @@ private final class AccountBarWindowTracker {
         guard let windows = CGWindowListCopyWindowInfo(options, kCGNullWindowID)
             as? [[String: Any]] else { return nil }
 
-        for window in windows {
-            guard let bounds = validatedBounds(from: window),
-                  let number = window[kCGWindowNumber as String] as? NSNumber else { continue }
-            windowID = CGWindowID(number.uint32Value)
-            return bounds
-        }
-        return nil
+        guard let selected = AccountWindowSelector.select(in: windows) else { return nil }
+        windowID = selected.id
+        return selected.bounds
     }
 
     private func description(for windowID: CGWindowID) -> [String: Any]? {
@@ -61,20 +57,7 @@ private final class AccountBarWindowTracker {
         return (CGWindowListCreateDescriptionFromArray(ids) as? [[String: Any]])?.first
     }
 
-    private func validatedBounds(from window: [String: Any]) -> CGRect? {
-        guard let owner = window[kCGWindowOwnerName as String] as? String,
-              owner == "ChatGPT" || owner == "Codex",
-              window[kCGWindowIsOnscreen as String] as? Bool == true,
-              let layer = window[kCGWindowLayer as String] as? NSNumber,
-              layer.intValue >= 0 && layer.intValue < 100,
-              let alpha = window[kCGWindowAlpha as String] as? NSNumber,
-              alpha.doubleValue > 0.01,
-              let boundsDictionary = window[kCGWindowBounds as String] as? NSDictionary,
-              let bounds = CGRect(dictionaryRepresentation: boundsDictionary),
-              bounds.width >= 800,
-              bounds.height >= 600 else { return nil }
-        return bounds
-    }
+
 }
 
 private final class AppDelegate: NSObject, NSApplicationDelegate {
