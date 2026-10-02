@@ -9,6 +9,7 @@ cp "$project_dir/scripts/animation-preview.swift" "$preview_dir/main.swift"
 xcrun swiftc -target "$(uname -m)-apple-macosx11.0" \
     "$project_dir/Sources/QuotaCore/BadgeLayout.swift" \
     "$project_dir/Sources/QuotaCore/QuotaMeterAnimation.swift" \
+    "$project_dir/Sources/QuotaCore/QuotaDisplayValue.swift" \
     "$project_dir/Sources/QuotaDock/QuotaMeterView.swift" "$preview_dir/main.swift" \
     -o "$preview_dir/animation-preview"
 "$preview_dir/animation-preview" "$@"

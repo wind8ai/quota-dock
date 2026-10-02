@@ -53,4 +53,13 @@ final class QuotaMeterAnimationTests {
         precondition(!state.advance(by: 1, visible: true, reducedMotion: false))
         precondition(state.displayedPercent == nil && state.targetPercent == nil)
     }
+
+    func testFractionalTargetSurvivesTransition() {
+        var state = QuotaMeterAnimation()
+        state.setTarget(64.3, animated: false)
+        state.setTarget(63.7, animated: true)
+        state.advance(by: 0.6, visible: true, reducedMotion: false)
+        precondition(abs(state.displayedPercent! - 63.7) < 0.000001)
+        precondition(state.targetPercent == 63.7)
+    }
 }

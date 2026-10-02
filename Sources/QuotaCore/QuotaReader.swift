@@ -70,13 +70,14 @@ struct QuotaReader {
                   resolvedLimits["limit_id"] as? String == "codex",
                   let primary = resolvedLimits["primary"] as? [String: Any],
                   let used = primary["used_percent"] as? NSNumber,
+                  used.doubleValue.isFinite,
                   let resetsAt = primary["resets_at"] as? NSNumber else { continue }
 
             let observedAt = (object["timestamp"] as? String)
                 .flatMap(ISO8601DateFormatter().date(from:))
                 ?? fallbackDate
             return QuotaSnapshot(
-                remainingPercent: max(0, min(100, Int((100 - used.doubleValue).rounded()))),
+                remainingPercent: max(0, min(100, 100 - used.doubleValue)),
                 observedAt: observedAt,
                 resetsAt: resetsAt.doubleValue
             )

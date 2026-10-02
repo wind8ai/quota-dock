@@ -14,7 +14,7 @@ final class QuotaStabilizerTests {
         defaults.removePersistentDomain(forName: suite)
     }
 
-    private func snapshot(_ percent: Int, reset: Double = 1000) -> QuotaSnapshot {
+    private func snapshot(_ percent: Double, reset: Double = 1000) -> QuotaSnapshot {
         QuotaSnapshot(remainingPercent: percent, observedAt: Date(timeIntervalSince1970: 500), resetsAt: reset)
     }
 
@@ -67,10 +67,28 @@ final class QuotaStabilizerTests {
 
     func testHistoryIsBoundedAndEqualObservationDoesNotAppend() throws {
         let subject = QuotaStabilizer(defaults: defaults)
-        for value in (20...30).reversed() { _ = subject.displayPercent(for: snapshot(value)) }
+        for value in (20...30).reversed() { _ = subject.displayPercent(for: snapshot(Double(value))) }
         _ = subject.displayPercent(for: snapshot(20))
         let history = try JSONDecoder().decode([QuotaSnapshot].self,
                                                from: defaults.data(forKey: "quota-history-v2")!)
         precondition(history.map(\.remainingPercent) == [24, 23, 22, 21, 20])
+    }
+
+    func testFractionalCacheSurvivesRestartAndOnlyDecreases() {
+        _ = QuotaStabilizer(defaults: defaults).displayPercent(for: snapshot(64.3))
+        let restarted = QuotaStabilizer(defaults: UserDefaults(suiteName: suite)!)
+        precondition(restarted.displayPercent(for: nil) == 64.3)
+        precondition(restarted.displayPercent(for: snapshot(64.4)) == 64.3)
+        precondition(restarted.displayPercent(for: snapshot(64.2)) == 64.2)
+    }
+
+    func testLegacyRoundingCanBeCorrectedOnceWithinHalfPoint() {
+        defaults.set(Data("[{\"remainingPercent\":64,\"observedAt\":0,\"resetsAt\":1000}]".utf8),
+                     forKey: "quota-history-v2")
+        let subject = QuotaStabilizer(defaults: defaults)
+        precondition(subject.displayPercent(for: snapshot(64.5)) == 64)
+        precondition(subject.displayPercent(for: snapshot(64.4)) == 64.4)
+        let restarted = QuotaStabilizer(defaults: UserDefaults(suiteName: suite)!)
+        precondition(restarted.displayPercent(for: snapshot(64.45)) == 64.4)
     }
 }

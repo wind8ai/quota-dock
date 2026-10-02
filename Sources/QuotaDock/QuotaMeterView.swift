@@ -6,7 +6,7 @@ final class QuotaMeterView: NSView {
     private var animation = QuotaMeterAnimation()
     private var lastTick: TimeInterval?
 
-    var remainingPercent: Int? {
+    var remainingPercent: Double? {
         get { animation.targetPercent }
         set { setPercent(newValue, animated: false) }
     }
@@ -17,7 +17,7 @@ final class QuotaMeterView: NSView {
         set { animation.phase = newValue; needsDisplay = true }
     }
 
-    func setPercent(_ value: Int?, animated: Bool) {
+    func setPercent(_ value: Double?, animated: Bool) {
         animation.setTarget(value, animated: animated)
         needsDisplay = true
     }
@@ -160,11 +160,14 @@ final class QuotaMeterView: NSView {
         shadow.shadowColor = NSColor.black.withAlphaComponent(0.85)
         shadow.shadowBlurRadius = 2
         shadow.shadowOffset = NSSize(width: 0, height: -0.5)
-        let text = remainingPercent.map { "\(max(0, min(100, $0)))%" } ?? "--%"
+        let text = QuotaDisplayValue.text(for: remainingPercent)
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
+        let baseFont = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .bold)
+        let measuredWidth = (text as NSString).size(withAttributes: [.font: baseFont]).width
+        let fontSize = min(11, 11 * (rect.width - 3) / max(1, measuredWidth))
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 8, weight: .semibold),
+            .font: NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .bold),
             .foregroundColor: NSColor.white.withAlphaComponent(0.96),
             .paragraphStyle: paragraph,
             .shadow: shadow

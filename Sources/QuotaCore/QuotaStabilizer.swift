@@ -20,7 +20,7 @@ final class QuotaStabilizer {
         }
     }
 
-    func displayPercent(for observed: QuotaSnapshot?) -> Int? {
+    func displayPercent(for observed: QuotaSnapshot?) -> Double? {
         guard let observed = observed else {
             return history.last?.remainingPercent
         }
@@ -42,7 +42,12 @@ final class QuotaStabilizer {
 
         // Within one weekly window, remaining quota only decreases. A larger
         // value from another session is stale and must not replace the cache.
-        guard observed.remainingPercent <= cached.remainingPercent else {
+        // A legacy rounded value represents a half-point interval. Allow its
+        // first precise replacement inside that interval, then resume monotonicity.
+        let correctsLegacyRounding = cached.hasDecimalPrecision != true
+            && observed.hasDecimalPrecision == true
+            && observed.remainingPercent < cached.remainingPercent + 0.5
+        guard observed.remainingPercent <= cached.remainingPercent || correctsLegacyRounding else {
             return cached.remainingPercent
         }
 
