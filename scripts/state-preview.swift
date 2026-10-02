@@ -3,6 +3,7 @@ import AppKit
 let reference = NSImage(contentsOfFile: CommandLine.arguments[2])!
 reference.size = NSSize(width: 62, height: 156)
 let canvas = NSSize(width: 424, height: 178)
+let english = CommandLine.arguments.contains("--english")
 func render(phase: Double, destination: String) throws {
     let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil,
         pixelsWide: Int(canvas.width * 2), pixelsHigh: Int(canvas.height * 2),
@@ -14,10 +15,10 @@ func render(phase: Double, destination: String) throws {
     context.cgContext.scaleBy(x: 2, y: 2)
     NSColor(srgbRed: 0.07, green: 0.07, blue: 0.07, alpha: 1).setFill()
     NSBezierPath(rect: NSRect(origin: .zero, size: canvas)).fill()
-    let states: [(String, Double?)] = [
-        ("满额", 100), ("充足", 63), ("偏低", 32),
-        ("临界", 12), ("耗尽", 0), ("无数据", nil)
-    ]
+    let labels = english ? ["Full", "Available", "Low", "Critical", "Empty", "No data"]
+        : ["满额", "充足", "偏低", "临界", "耗尽", "无数据"]
+    let values: [Double?] = [100, 63, 32, 12, 0, nil]
+    let states = Array(zip(labels, values))
     for (index, state) in states.enumerated() {
         let x = CGFloat(6 + index * 70)
         let title = NSAttributedString(string: state.0, attributes: [
@@ -45,7 +46,7 @@ func render(phase: Double, destination: String) throws {
         .write(to: URL(fileURLWithPath: destination))
 }
 
-if CommandLine.arguments.count > 3 && CommandLine.arguments[3] == "--frames" {
+if CommandLine.arguments.contains("--frames") {
     for frame in 0..<120 {
         let destination = CommandLine.arguments[1] + String(format: "/frame-%03d.png", frame)
         try render(phase: Double(frame) / 120 * .pi * 4, destination: destination)

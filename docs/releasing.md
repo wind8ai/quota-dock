@@ -1,5 +1,7 @@
 # 构建、签名与发布
 
+**中文** | [English](releasing.en.md)
+
 ## 构建输入
 
 版本和 build number 只在 `Resources/Info.plist` 维护。发布前提交本项目改动，并记录 macOS、Swift、SDK 和目标架构。需要选择已安装的工具链时，通过 `DEVELOPER_DIR` 指定。
