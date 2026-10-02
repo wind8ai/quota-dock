@@ -62,8 +62,8 @@ final class QuotaReaderTests {
         precondition(QuotaReader.latestSnapshot(in: directory)?.remainingPercent == 20)
     }
 
-    func testClampsAndRoundsPercent() throws {
-        for (used, expected) in [(-10.0, 100), (110.0, 0), (24.4, 76)] {
+    func testClampsAndPreservesFractionalPercent() throws {
+        for (used, expected) in [(-10.0, 100.0), (110.0, 0.0), (24.4, 75.6)] {
             try write(event(used: used))
             precondition(QuotaReader.latestSnapshot(in: directory)?.remainingPercent == expected)
         }

@@ -8,7 +8,7 @@ let readerTests: [(String, () throws -> Void)] = [
     ("testUsesLastValidEventWithinFile", reader.testUsesLastValidEventWithinFile),
     ("testNewResetCycleWinsOverNewerObservationOfOldCycle", reader.testNewResetCycleWinsOverNewerObservationOfOldCycle),
     ("testWithin120SecondsUsesNewestObservation", reader.testWithin120SecondsUsesNewestObservation),
-    ("testClampsAndRoundsPercent", reader.testClampsAndRoundsPercent),
+    ("testClampsAndPreservesFractionalPercent", reader.testClampsAndPreservesFractionalPercent),
     ("testMissingOrInvalidDataReturnsNil", reader.testMissingOrInvalidDataReturnsNil),
     ("testFallbackToFileModificationDate", reader.testFallbackToFileModificationDate),
     ("testOnlySearchesTwelveMostRecentlyModifiedFiles", reader.testOnlySearchesTwelveMostRecentlyModifiedFiles),
@@ -30,7 +30,9 @@ let stabilizerTests: [(String, () throws -> Void)] = [
     ("testCacheSurvivesRecreationAndMissingRead", stabilizer.testCacheSurvivesRecreationAndMissingRead),
     ("testReadsLegacyV2CacheSchema", stabilizer.testReadsLegacyV2CacheSchema),
     ("testCorruptOrInvalidCacheIsIgnored", stabilizer.testCorruptOrInvalidCacheIsIgnored),
-    ("testHistoryIsBoundedAndEqualObservationDoesNotAppend", stabilizer.testHistoryIsBoundedAndEqualObservationDoesNotAppend)
+    ("testHistoryIsBoundedAndEqualObservationDoesNotAppend", stabilizer.testHistoryIsBoundedAndEqualObservationDoesNotAppend),
+    ("testFractionalCacheSurvivesRestartAndOnlyDecreases", stabilizer.testFractionalCacheSurvivesRestartAndOnlyDecreases),
+    ("testLegacyRoundingCanBeCorrectedOnceWithinHalfPoint", stabilizer.testLegacyRoundingCanBeCorrectedOnceWithinHalfPoint)
 ]
 for (name, test) in stabilizerTests {
     stabilizer.setUp()
@@ -54,7 +56,8 @@ let animationTests: [(String, () -> Void)] = [
     ("testHiddenStatePausesTransitionAndBubbles", animation.testHiddenStatePausesTransitionAndBubbles),
     ("testReducedMotionSnapsLevelAndFreezesPhase", animation.testReducedMotionSnapsLevelAndFreezesPhase),
     ("testRetargetingStartsAtCurrentLevel", animation.testRetargetingStartsAtCurrentLevel),
-    ("testZeroAndUnknownStopAmbientAnimation", animation.testZeroAndUnknownStopAmbientAnimation)
+    ("testZeroAndUnknownStopAmbientAnimation", animation.testZeroAndUnknownStopAmbientAnimation),
+    ("testFractionalTargetSurvivesTransition", animation.testFractionalTargetSurvivesTransition)
 ]
 for (name, test) in animationTests {
     test()
@@ -72,4 +75,14 @@ for (name, test) in windowTests {
     print("PASS \(name)")
 }
 
-print("All \(readerTests.count + stabilizerTests.count + layoutTests.count + animationTests.count + windowTests.count) tests passed.")
+let display = QuotaDisplayValueTests()
+let displayTests: [(String, () -> Void)] = [
+    ("testOneDecimalWithoutPercentSign", display.testOneDecimalWithoutPercentSign),
+    ("testUnknownAndInvalidValuesHaveNoPercentSign", display.testUnknownAndInvalidValuesHaveNoPercentSign)
+]
+for (name, test) in displayTests {
+    test()
+    print("PASS \(name)")
+}
+
+print("All \(readerTests.count + stabilizerTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count) tests passed.")

@@ -4,7 +4,7 @@ final class PreviewDelegate: NSObject, NSApplicationDelegate {
     private let view = QuotaMeterView(frame: NSRect(origin: .zero, size: QuotaMeterView.size))
     private var window: NSWindow!
     private var timer: Timer?
-    private let values: [Int?] = [100, 57, 32, 12, 0, nil]
+    private let values: [Double?] = [100, 57.3, 32.8, 12.5, 0, nil]
     private var lastIndex = -1
     private var started: TimeInterval = 0
 
