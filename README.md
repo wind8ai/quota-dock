@@ -49,4 +49,3 @@ pkill -x QuotaDock
 - [构建、签名和发布](docs/releasing.md)
 - [更新记录](CHANGELOG.md)
 - [用 Codex 复刻的提示词](docs/recreate-prompt.md)
-- [X 短文与配图](docs/x-post.md)
