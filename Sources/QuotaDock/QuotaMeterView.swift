@@ -147,7 +147,7 @@ final class QuotaMeterView: NSView {
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 9, weight: .semibold),
+            .font: NSFont.monospacedDigitSystemFont(ofSize: 8, weight: .semibold),
             .foregroundColor: NSColor.white.withAlphaComponent(0.96),
             .paragraphStyle: paragraph,
             .shadow: shadow
