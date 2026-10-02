@@ -37,7 +37,7 @@ func render(phase: Double, destination: String) throws {
         let view = QuotaMeterView(frame: NSRect(origin: .zero, size: QuotaMeterView.size))
         view.remainingPercent = state.1
         view.phase = phase
-        (AffineTransform(translationByX: 8, byY: 43) as NSAffineTransform).concat()
+        (AffineTransform(translationByX: 8, byY: 45) as NSAffineTransform).concat()
         view.draw(view.bounds)
         NSGraphicsContext.restoreGraphicsState()
     }

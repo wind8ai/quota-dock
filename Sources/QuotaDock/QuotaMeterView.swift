@@ -163,11 +163,11 @@ final class QuotaMeterView: NSView {
         let text = QuotaDisplayValue.text(for: remainingPercent)
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
-        let baseFont = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .bold)
+        let baseFont = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .heavy)
         let measuredWidth = (text as NSString).size(withAttributes: [.font: baseFont]).width
-        let fontSize = min(11, 11 * (rect.width - 3) / max(1, measuredWidth))
+        let fontSize = min(13, 13 * (rect.width - 3) / max(1, measuredWidth))
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .bold),
+            .font: NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .heavy),
             .foregroundColor: NSColor.white.withAlphaComponent(0.96),
             .paragraphStyle: paragraph,
             .shadow: shadow

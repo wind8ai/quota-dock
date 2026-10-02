@@ -77,7 +77,7 @@ for (name, test) in windowTests {
 
 let display = QuotaDisplayValueTests()
 let displayTests: [(String, () -> Void)] = [
-    ("testOneDecimalWithoutPercentSign", display.testOneDecimalWithoutPercentSign),
+    ("testIntegerWithoutPercentSign", display.testIntegerWithoutPercentSign),
     ("testUnknownAndInvalidValuesHaveNoPercentSign", display.testUnknownAndInvalidValuesHaveNoPercentSign)
 ]
 for (name, test) in displayTests {
