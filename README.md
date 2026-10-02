@@ -1,5 +1,7 @@
 # QuotaDock
 
+**中文** | [English](README.en.md)
+
 把 Codex 的剩余额度放在头像上方的 macOS 液体槽。液面表示剩余比例，底部显示整数；窗口移动时跟随，鼠标可以穿透。
 
 ![QuotaDock 六种模拟额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=74db1e89de0b)
@@ -39,7 +41,7 @@ pkill -x QuotaDock
 ```sh
 ./scripts/test.sh                  # 32 个回归用例
 ./scripts/preview-animation.sh     # 合成额度交互预览，关闭窗口退出
-./scripts/render-states.sh --animate  # 重新生成上面的静态图与 GIF，需要 FFmpeg
+./scripts/render-states.sh --animate  # 重新生成中文静态图与 GIF，需要 FFmpeg
 ./scripts/package.sh               # 测试、构建、签名、ZIP、校验和
 ```
 
@@ -49,3 +51,5 @@ pkill -x QuotaDock
 - [构建、签名和发布](docs/releasing.md)
 - [更新记录](CHANGELOG.md)
 - [用 Codex 复刻的提示词](docs/recreate-prompt.md)
+
+执行 `./scripts/render-states.sh --english --animate` 可生成英文标签的预览。
