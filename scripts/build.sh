@@ -12,7 +12,7 @@ mkdir -p "$staging/QuotaDock.app/Contents/MacOS"
 cp "$project_dir/Resources/Info.plist" "$staging/QuotaDock.app/Contents/Info.plist"
 xcrun swiftc -O -target "$(uname -m)-apple-macosx11.0" \
     "$project_dir"/Sources/QuotaCore/*.swift \
-    "$project_dir"/Sources/QuotaDock/main.swift \
+    "$project_dir"/Sources/QuotaDock/*.swift \
     -o "$staging/QuotaDock.app/Contents/MacOS/QuotaDock"
 chmod 755 "$staging/QuotaDock.app/Contents/MacOS/QuotaDock"
 plutil -lint "$staging/QuotaDock.app/Contents/Info.plist"

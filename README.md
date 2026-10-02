@@ -17,7 +17,11 @@ Swift/AppKit 独立 macOS 额度悬浮徽标，当前版本 **2.1（build 12）*
 
 ![QuotaDock 六种额度状态](docs/images/quota-states.png)
 
-在项目根目录执行 `./scripts/render-states.sh` 可重新生成此图，不读取会话、不写额度缓存，也不启动悬浮窗。
+上图为保留的 2.1 状态图。3.0 正在设计中，以下为头像上方竖直液体槽的静态预览，尚未接入应用。
+
+![QuotaDock 3.0 六种液体槽状态](docs/images/quota-states-v3.png)
+
+在项目根目录执行 `./scripts/render-states.sh` 可重新生成 3.0 状态图，不读取会话、不写额度缓存，也不启动悬浮窗。
 
 ## 开发与构建
 
