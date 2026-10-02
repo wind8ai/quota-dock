@@ -24,7 +24,7 @@ func render(phase: Double, destination: String) throws {
             .font: NSFont.systemFont(ofSize: 9, weight: .medium),
             .foregroundColor: NSColor(calibratedWhite: 0.65, alpha: 1)
         ])
-        title.draw(at: NSPoint(x: x + (62 - title.size().width) / 2, y: 163))
+        title.draw(at: NSPoint(x: x + BadgeLayout.avatarCenterX - title.size().width / 2, y: 163))
         NSGraphicsContext.saveGraphicsState()
         (AffineTransform(translationByX: x, byY: 4) as NSAffineTransform).concat()
         reference.draw(in: NSRect(x: 0, y: 0, width: 62, height: 156))
