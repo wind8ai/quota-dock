@@ -13,20 +13,16 @@ xcrun swiftc -target "$(uname -m)-apple-macosx11.0" \
     "$project_dir/Sources/QuotaCore/QuotaDisplayValue.swift" \
     "$project_dir/Sources/QuotaDock/QuotaMeterView.swift" "$preview_dir/main.swift" \
     -o "$preview_dir/render-states"
-"$preview_dir/render-states" "$project_dir/docs/images/quota-states-v3.png" \
-    "$project_dir/docs/images/account-bar-v3-reference.png"
+"$preview_dir/render-states" "$project_dir/docs/images/quota-dock-states.png" \
+    "$project_dir/docs/images/preview-reference.png"
 if [[ "${1:-}" == '--animate' ]]; then
     command -v ffmpeg >/dev/null || { echo 'Animated export requires ffmpeg.' >&2; exit 1; }
     mkdir -p "$preview_dir/frames"
     "$preview_dir/render-states" "$preview_dir/frames" \
-        "$project_dir/docs/images/account-bar-v3-reference.png" --frames
-    ffmpeg -hide_banner -loglevel error -y -framerate 12 \
+        "$project_dir/docs/images/preview-reference.png" --frames
+    ffmpeg -hide_banner -loglevel error -y -framerate 20 \
         -i "$preview_dir/frames/frame-%03d.png" \
         -filter_complex '[0:v]split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a' \
-        -loop 0 "$project_dir/docs/images/quota-motion-v3.gif"
-    printf '%s\n' "$project_dir/docs/images/quota-motion-v3.gif"
-    ffmpeg -hide_banner -loglevel error -y -i "$project_dir/docs/images/quota-motion-v3.gif" \
-        -filter_complex '[0:v]scale=1280:-1:flags=lanczos,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a' \
-        -loop 0 "$project_dir/docs/images/quota-motion-v3-x.gif"
-    printf '%s\n' "$project_dir/docs/images/quota-motion-v3-x.gif"
+        -loop 0 "$project_dir/docs/images/quota-dock.gif"
+    printf '%s\n' "$project_dir/docs/images/quota-dock.gif"
 fi

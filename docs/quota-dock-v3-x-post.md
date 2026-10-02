@@ -1,5 +1,0 @@
-我把 QuotaDock 升级到 3.0 了。新版 Codex 挪了头像，我把原来横着的百分比改成了头像上方的竖直液体槽。剩多少，液面就有多高，气泡慢慢往上浮。额度充足时是绿色，低于 50% 变橙，低于 20% 变红。拖动窗口，血条也会跟着走。
-
-![QuotaDock 3.0 六种模拟额度，真实窗口截图](images/quota-states-v3-live.png)
-
-[GIF 动图下载，用于 X 上传](images/quota-motion-v3-x.gif)

@@ -1,99 +1,52 @@
 # QuotaDock
 
-Swift/AppKit 独立 macOS 额度悬浮工具，当前版本 **3.0.3（build 16）**。原工具名为 CodexQuotaBadge。
+把 Codex 的剩余额度放在头像上方的 macOS 液体槽。液面表示剩余比例，底部显示整数；窗口移动时跟随，鼠标可以穿透。
 
-竖直玻璃胶囊位于新版 ChatGPT/Codex 左下角头像正上方，大小为 **32 × 96 pt**。当前实测头像中心距窗口左侧 **26 pt**，底边距头像顶部 **8 pt**，即面板左侧偏移 **10 pt**、底部偏移 **45 pt**。不依赖宠物，也不修改 ChatGPT/Codex 应用包。3.0 只使用新版布局，旧横向徽标已移除。
+![QuotaDock 六种模拟额度状态](docs/images/quota-dock.gif)
 
-- 每 30 秒读取 `~/.codex/sessions` 下最近修改的 12 个 JSONL 文件，每个最多读取末尾 2 MB。
-- 只接受 `event_msg / token_count` 中 `limit_id == "codex"` 的 `primary` 额度，过滤 Spark 独立额度；支持直接及 `info.rate_limits` 两种记录形式。保留 `100 - used_percent` 的小数并限制在 0–100，数值四舍五入显示为整数，不带小数点或百分号，例如 `64`。
-- 以 `resets_at` 区分周期，同一周周期允许 120 秒的时间抖动。跨文件先选最新周期，再选该周期中最新观测；同一周期内缓存只下降，新周期允许回升。
-- 缓存跨重启保留，最多保存 5 条记录。暂时没有可读回执时沿用缓存；无缓存时显示 `--`。旧整数缓存可继续读取，首次精确回执可纠正旧舍入误差，幅度小于 0.5 个百分点，随后恢复同周期只下降的规则。不直接请求额度服务，因此显示值可能滞后于当前账号状态。
-- 液体从底部填充，液面高度对应剩余额度。绿色表示 ≥50%，琥珀色表示 ≥20% 且 <50%，红色表示 <20%。底部为白色等宽粗体数字，配轻微阴影，没有数值底板。常规字号 13 pt、重体，长数值按宽度缩小以留出两侧空隙；`0` 保留红色细线，无数据且无缓存时为空槽 `--`。
-- 液位变化用约 0.6 秒缓动。液面前后两层起伏，三个带高光的气泡上浮并轻微左右摆动。位置与动画共用 0.05 秒定时器；目标隐藏时暂停动画。系统开启“减少动态效果”时立即更新液位，保持液面和气泡静止。
-- 识别窗口所有者 `ChatGPT` / `Codex`、普通窗口层级、宽 ≥800 pt、高 ≥600 pt；mini／宠物浮动窗口不会替换主窗口的头像锚点。未找到屏幕上的主窗口时隐藏。坐标按槽体所在显示器转换。面板鼠标穿透，不出现在 Dock 中。
+当前版本 **3.0.3 / build 16**。绿色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`0` 保留红色细线，`--` 表示没有数据或缓存。图中六种额度均为模拟值。
 
-## 复刻与状态预览
+## 构建与启动
 
-[3.0 X 短文](docs/quota-dock-v3-x-post.md) · [复刻提示词](docs/recreate-v3-prompt.md)。以下保留 3.0 初版的真实窗口档位截图，字号和百分号样式以之后的版本为准。
-
-![QuotaDock 3.0 真实窗口档位截图](docs/images/quota-states-v3-live.png)
-
-原生绘制的状态预览：
-
-![QuotaDock 3.0 六种液体槽状态](docs/images/quota-states-v3.png)
-
-在项目根目录执行 `./scripts/render-states.sh` 可重新生成 3.0 状态图，不读取会话、不写额度缓存，也不启动悬浮窗。
-
-![QuotaDock 3.0 液面与气泡动画预览](docs/images/quota-motion-v3.gif)
-
-安装 FFmpeg 后，执行 `./scripts/render-states.sh --animate` 可导出六秒循环动图。执行 `./scripts/preview-animation.sh` 可打开独立预览窗口，每两秒循环切换合成额度，验证液位过渡；加 `--reduce-motion` 可预览静止效果，关闭预览窗口即可退出。预览不读真实回执、不写缓存。
-
-[X 上传用 GIF](docs/images/quota-motion-v3-x.gif) 缩为 1280 px 宽，原图保留；`--animate` 会同时生成此文件。X 支持循环 GIF，尺寸建议见 [官方媒体文档](https://docs.x.com/x-api/media/quickstart/best-practices)。
-
-[2.1 X 短文](docs/quota-dock-x-post.md) 和 [2.1 状态图](docs/images/quota-states.png) 作为旧版记录保留。
-
-## 开发与构建
-
-需要 macOS 11+、Apple Command Line Tools 或 Xcode，Swift 5.3+。直接使用 `swiftc`，不要求完整 Xcode 或 XCTest runtime；无第三方依赖。
-
-源码维护于私有 monorepo [wind8ai/codex-tools](https://github.com/wind8ai/codex-tools) 的 `projects/quota-dock`。私有独立仓库 [wind8ai/quota-dock](https://github.com/wind8ai/quota-dock) 通过 subtree split 同步，不在项目目录中创建子仓。以下命令均在项目根目录执行：monorepo 中先进入 `projects/quota-dock`，独立 clone 中使用仓库根目录；也可以在其他目录使用脚本的绝对路径。
+需要 macOS 11 或更新版本，以及 Apple Command Line Tools 或 Xcode、Swift 5.3 或更新版本。应用没有第三方依赖，目前已在 Apple Silicon 上构建和验证。
 
 ```sh
-./scripts/test.sh
+xcode-select --install  # 已安装开发工具时跳过
+
+git clone https://github.com/wind8ai/quota-dock.git
+cd quota-dock
 ./scripts/build.sh
 ./scripts/sign.sh
-```
-
-`build.sh` 编译本机架构的 release 可执行文件，组装到项目的 `build/QuotaDock.app`；每次重新构建后需要重新签名。`sign.sh` 默认使用 ad-hoc 签名用于本机运行，校验签名后打印签名信息。
-
-完整验证、构建、签名、打包：
-
-```sh
-./scripts/package.sh
-```
-
-输出到项目的 `dist/`：`QuotaDock-3.0.3-16-<arch>.zip`、对应 `.sha256` 和 `.build-info.txt`。构建记录包含源码提交、脏状态、Swift/SDK/macOS 和签名身份。相同输入可重复执行流程；不承诺跨 SDK、签名时间戳或 ZIP 元数据的逐字节一致。当前脚本构建本机单一架构，不声称是 universal binary。
-
-指定现有签名证书：
-
-```sh
-SIGNING_IDENTITY='Developer ID Application: YOUR NAME (TEAMID)' \
-  ./scripts/package.sh
-```
-
-证书模式启用 hardened runtime 和安全时间戳；脚本不会创建证书、上传或自动 notarize。对外分发还需完成 Apple notarization，参见 [发布规则](docs/releasing.md)。
-
-## 启动、退出与旧版迁移
-
-旧工具仍可能从 Documents 目录运行。先检查，避免启动两个重叠徽标：
-
-```sh
-ps -axo pid,command | grep -E '[C]odexQuotaBadge|[Q]uotaDock'
-```
-
-确认新构建和测试通过后，在活动监视器中结束旧 `CodexQuotaBadge`，再双击新 `QuotaDock.app`，或从项目根目录执行：
-
-```sh
 open build/QuotaDock.app
 ```
 
-退出新版：在活动监视器中结束 `QuotaDock`，或 `pkill -x QuotaDock`。不自动添加登录项，重启后需再次启动。若手工登录项指向旧路径，正式切换时再更新它。
+应用不出现在 Dock 中，也不会自动添加登录项。退出时在活动监视器中结束 `QuotaDock`，或执行：
 
-保留 bundle identifier `com.ben.codex-quota-badge` 和 `quota-history-v2` 缓存键，直接继续使用原 UserDefaults 数据；没有额外的迁移副本或双读 fallback。不要同时长期运行新旧应用。以后只有明确执行缓存迁移或重置时才更换此持久化标识。
-
-本轮保留旧源码、`.app` 和 `.zip`，不自动移动、删除或切换运行实例。来源、校验和与验收记录见 [迁移记录](docs/migration.md)。
-
-## 项目结构与测试
-
-```text
-Sources/QuotaDock/main.swift    AppKit 绘制、窗口追踪、定时刷新
-Sources/QuotaDock/QuotaMeterView.swift  液体槽绘制
-Sources/QuotaCore/              额度解析、缓存稳定器、定位数值
-Tests/QuotaCoreTests/           合成回执与隔离 UserDefaults 测试
-Resources/Info.plist            应用元数据及版本唯一来源
-scripts/                       测试、构建、签名、打包
-docs/                          迁移证据及发布管理规则
-build/  dist/  .build/          本地生成，不入 Git
+```sh
+pkill -x QuotaDock
 ```
 
-测试脚本用 `swiftc -Onone` 编译核心源码及测试入口，执行 32 个使用 Swift 原生 `precondition` 的回归用例，覆盖额度读取、缓存、头像锚点、液位过渡、隐藏暂停、减少动态效果、mini 窗口筛选和数值格式和精度缓存；断言失败或抛错会返回非零退出码。测试不读取真实账号回执，不写应用的正式缓存域。UI 实际跟随、遮挡、跨屏及视觉对齐仍需人工验收；窗口标题或尺寸规则无法覆盖的布局会影响定位。额度读取保留 2.1 的实现边界：只查最近 12 个文件、尾部必须能解码为 UTF-8、时间戳解析失败使用文件修改时间；账号切换没有独立缓存分区。
+## 它读取什么
+
+每 30 秒从本机 `~/.codex/sessions` 的 `token_count` 回执读取 `limit_id=codex` 的主额度，过滤 Spark 独立额度。不会请求额度服务，也不修改 ChatGPT/Codex 应用包。
+
+剩余额度按 `100 - used_percent` 计算，显示为四舍五入后的整数。缓存跨重启保留，暂时读不到回执时沿用缓存。显示可能滞后于实际使用量，账号切换没有独立缓存分区。
+
+液面有两层波动和上浮气泡，额度变化约 0.6 秒过渡。目标窗口隐藏时暂停动画；开启 macOS 的“减少动态效果”时保持静止。
+
+## 开发
+
+```sh
+./scripts/test.sh                  # 32 个回归用例
+./scripts/preview-animation.sh     # 合成额度交互预览，关闭窗口退出
+./scripts/render-states.sh --animate  # 重新生成上面的静态图与 GIF，需要 FFmpeg
+./scripts/package.sh               # 测试、构建、签名、ZIP、校验和
+```
+
+`build/`、`dist/`、`.build/` 和运行数据不进入 Git。默认签名为 ad-hoc，尚未完成 Apple 公证。
+
+- [定位、数据来源和已知限制](docs/behavior.md)
+- [构建、签名和发布](docs/releasing.md)
+- [更新记录](CHANGELOG.md)
+- [用 Codex 复刻的提示词](docs/recreate-prompt.md)
+- [X 短文与配图](docs/x-post.md)
