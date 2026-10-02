@@ -3,7 +3,7 @@
 ## 发布输入
 
 1. 在独立的 `codex-tools` 仓库中完成代码 review、测试和提交。只提交本项目及根仓配套文件。
-2. 版本和 build number 只维护在 `Resources/Info.plist`；发布新修改时更新版本/build。3.0/build 13 改为新版头像上方的竖直液体槽，沿用 2.1 的额度数据和缓存。
+2. 版本和 build number 只维护在 `Resources/Info.plist`；发布新修改时更新版本/build。3.0/build 13 改为新版头像上方的竖直液体槽，沿用 2.1 的额度数据和缓存。3.0.1/build 14 修复开启 mini 时浮动窗口被误选为主窗口的问题，详见 [修复记录](mini-window-fix.md)。
 3. 固定 macOS、Swift 与 SDK；使用 `DEVELOPER_DIR` 选择本机已安装的 Apple 工具链，记录其版本。无需下载第三方依赖。
 4. 执行 `scripts/package.sh`。它会依次测试、release 构建、签名验证、使用 `ditto` 打包、生成 SHA-256 和构建记录。任一步失败都不视为可发布产物；`dist` 中可能有上次产物，须核对构建记录与校验和。
 

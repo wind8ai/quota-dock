@@ -61,4 +61,15 @@ for (name, test) in animationTests {
     print("PASS \(name)")
 }
 
-print("All \(readerTests.count + stabilizerTests.count + layoutTests.count + animationTests.count) tests passed.")
+let windowSelector = AccountWindowSelectorTests()
+let windowTests: [(String, () -> Void)] = [
+    ("testMiniBeforeMainKeepsMainAvatarAnchor", windowSelector.testMiniBeforeMainKeepsMainAvatarAnchor),
+    ("testOnlyMiniDoesNotCreateAnAvatarAnchor", windowSelector.testOnlyMiniDoesNotCreateAnAvatarAnchor),
+    ("testMainSelectionDoesNotDependOnMiniOrdering", windowSelector.testMainSelectionDoesNotDependOnMiniOrdering)
+]
+for (name, test) in windowTests {
+    test()
+    print("PASS \(name)")
+}
+
+print("All \(readerTests.count + stabilizerTests.count + layoutTests.count + animationTests.count + windowTests.count) tests passed.")
