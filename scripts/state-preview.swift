@@ -15,8 +15,8 @@ func render(phase: Double, destination: String) throws {
     NSColor(srgbRed: 0.055, green: 0.055, blue: 0.055, alpha: 1).setFill()
     NSBezierPath(rect: NSRect(origin: .zero, size: canvas)).fill()
     let states: [(String, Double?)] = [
-        ("满额", 100), ("充足", 57.3), ("偏低", 32.8),
-        ("临界", 12.5), ("耗尽", 0), ("无数据", nil)
+        ("满额", 100), ("充足", 64), ("偏低", 32),
+        ("临界", 12), ("耗尽", 0), ("无数据", nil)
     ]
     for (index, state) in states.enumerated() {
         let x = CGFloat(12 + (index % 3) * 226)
