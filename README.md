@@ -14,7 +14,11 @@ Swift/AppKit 独立 macOS 额度悬浮工具，当前版本 **3.0（build 13）*
 
 ## 复刻与状态预览
 
-[3.0 X 短文与复刻提示词](docs/quota-dock-v3-x-post.md)。以下使用生产 View 展示六种模拟额度。
+[3.0 X 短文](docs/quota-dock-v3-x-post.md) · [复刻提示词](docs/recreate-v3-prompt.md)。以下为在真实窗口中临时显示六个合成额度后截取的图片，不写真实回执或缓存。
+
+![QuotaDock 3.0 真实窗口档位截图](docs/images/quota-states-v3-live.png)
+
+原生绘制的状态预览：
 
 ![QuotaDock 3.0 六种液体槽状态](docs/images/quota-states-v3.png)
 
