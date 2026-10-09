@@ -25,6 +25,8 @@ private struct ScreenCoordinateConverter {
 private final class AccountBarWindowTracker {
     private var windowID: CGWindowID?
 
+    func invalidate() { windowID = nil }
+
     func appKitOrigin() -> NSPoint? {
         guard let bounds = liveMainWindowBounds() else { return nil }
         let badgeTopLeft = BadgeLayout.quartzTopLeft(in: bounds)
@@ -66,6 +68,8 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     private var positionTimer: Timer?
     private var quotaTimer: Timer?
     private var quotaRefreshRunning = false
+    private var resyncUntil: TimeInterval = 0
+    private var lastReorder: TimeInterval = 0
     private let accountBarWindowTracker = AccountBarWindowTracker()
     private let quotaStabilizer = QuotaStabilizer()
 
@@ -80,14 +84,23 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
             name: NSWorkspace.didActivateApplicationNotification,
             object: NSWorkspace.shared
         )
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self, selector: #selector(workspaceDidChange),
+            name: NSWorkspace.activeSpaceDidChangeNotification, object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self, selector: #selector(workspaceDidChange),
+            name: NSApplication.didChangeScreenParametersNotification, object: nil
+        )
 
-        positionTimer = Timer.scheduledTimer(
+        positionTimer = Timer(
             timeInterval: 0.05,
             target: self,
             selector: #selector(updatePosition),
             userInfo: nil,
             repeats: true
         )
+        RunLoop.main.add(positionTimer!, forMode: .common)
         quotaTimer = Timer.scheduledTimer(
             timeInterval: 30,
             target: self,
@@ -125,12 +138,25 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
+        let moved = panel.frame.origin != origin
         panel.setFrameOrigin(origin)
         badgeView.tick(at: ProcessInfo.processInfo.systemUptime, visible: true,
                        reducedMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
-        if !panel.isVisible {
+        let now = ProcessInfo.processInfo.systemUptime
+        // A panel may still report visible while absent from the fullscreen
+        // Space. Retry briefly through the Space transition, not indefinitely.
+        if !panel.isVisible || moved || (now < resyncUntil && now - lastReorder >= 0.25) {
             panel.orderFrontRegardless()
+            lastReorder = now
         }
+    }
+
+    @objc private func workspaceDidChange(_ notification: Notification) {
+        accountBarWindowTracker.invalidate()
+        resyncUntil = ProcessInfo.processInfo.systemUptime + 2
+        lastReorder = 0
+        panel.orderOut(nil)
+        updatePosition()
     }
 
     @objc private func frontApplicationDidChange(_ notification: Notification) {
@@ -138,7 +164,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         // the foreground while still removing this non-activating panel from the
         // visible window stack. Reorder when the foreground application changes
         // without needlessly issuing an order-front request on every frame.
-        updatePosition()
+        workspaceDidChange(notification)
         if panel.isVisible { panel.orderFrontRegardless() }
     }
 
