@@ -25,8 +25,6 @@ private struct ScreenCoordinateConverter {
 private final class AccountBarWindowTracker {
     private var windowID: CGWindowID?
 
-    func invalidate() { windowID = nil }
-
     func appKitOrigin() -> NSPoint? {
         guard let bounds = liveMainWindowBounds() else { return nil }
         let badgeTopLeft = BadgeLayout.quartzTopLeft(in: bounds)
@@ -39,9 +37,11 @@ private final class AccountBarWindowTracker {
 
     private func liveMainWindowBounds() -> CGRect? {
         if let windowID = windowID,
-           let window = description(for: windowID),
-           let bounds = AccountWindowSelector.bounds(from: window) {
-            return bounds
+           let window = description(for: windowID) {
+            // Keep the identity through modal dialogs and Space transitions.
+            // If this window is temporarily offscreen, hide instead of adopting
+            // another window (which may be a picker or detached chat).
+            return AccountWindowSelector.bounds(from: window)
         }
 
         windowID = nil
@@ -152,7 +152,6 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func workspaceDidChange(_ notification: Notification) {
-        accountBarWindowTracker.invalidate()
         resyncUntil = ProcessInfo.processInfo.systemUptime + 2
         lastReorder = 0
         panel.orderOut(nil)

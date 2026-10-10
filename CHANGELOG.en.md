@@ -2,6 +2,16 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.0.5 · build 18
+
+- Retain the selected main window across foreground and Space changes instead of adopting a file picker.
+- Hide while the tracked window is temporarily offscreen; rediscover after it closes, preferring the largest eligible window on discovery.
+- Add a regression case with a file picker in front of its main window.
+
+## 3.0.4 · build 17
+
+- Briefly restore panel ordering after Space/display changes and update positioning in common RunLoop modes.
+
 ## 3.0.3 · build 16
 
 - Show whole numbers without decimals or a percent sign, using a heavy font up to 13 pt.

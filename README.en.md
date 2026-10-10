@@ -6,7 +6,7 @@ A macOS liquid gauge for your remaining Codex quota. It sits above your avatar, 
 
 ![QuotaDock in six simulated quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=5bbcde937f56)
 
-Current version: **3.0.3 / build 16**. Green means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` leaves a thin red line; `--` means no reading or cached value is available. The preview uses simulated values.
+Current version: **3.0.5 / build 18**. Green means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` leaves a thin red line; `--` means no reading or cached value is available. The preview uses simulated values.
 
 ## Build and run
 
@@ -39,7 +39,7 @@ The liquid has two surface waves and rising bubbles. Level changes take about 0.
 ## Development
 
 ```sh
-./scripts/test.sh                     # 32 regression cases
+./scripts/test.sh                     # 33 regression cases
 ./scripts/preview-animation.sh        # Synthetic readings; close the window to quit
 ./scripts/render-states.sh --english --animate  # English preview; requires FFmpeg
 ./scripts/package.sh                  # Test, build, sign, ZIP, and checksum

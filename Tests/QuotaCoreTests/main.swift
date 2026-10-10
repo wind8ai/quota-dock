@@ -66,6 +66,7 @@ for (name, test) in animationTests {
 
 let windowSelector = AccountWindowSelectorTests()
 let windowTests: [(String, () -> Void)] = [
+    ("testFilePickerInFrontDoesNotReplaceMainWindow", windowSelector.testFilePickerInFrontDoesNotReplaceMainWindow),
     ("testMiniBeforeMainKeepsMainAvatarAnchor", windowSelector.testMiniBeforeMainKeepsMainAvatarAnchor),
     ("testOnlyMiniDoesNotCreateAnAvatarAnchor", windowSelector.testOnlyMiniDoesNotCreateAnAvatarAnchor),
     ("testMainSelectionDoesNotDependOnMiniOrdering", windowSelector.testMainSelectionDoesNotDependOnMiniOrdering)

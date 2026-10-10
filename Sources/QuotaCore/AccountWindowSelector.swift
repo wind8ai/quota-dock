@@ -3,12 +3,19 @@ import Foundation
 
 enum AccountWindowSelector {
     static func select(in windows: [[String: Any]]) -> (id: CGWindowID, bounds: CGRect)? {
+        var selected: (id: CGWindowID, bounds: CGRect)?
         for window in windows {
             guard let bounds = bounds(from: window),
                   let number = window[kCGWindowNumber as String] as? NSNumber else { continue }
-            return (CGWindowID(number.uint32Value), bounds)
+            // On initial discovery a modal file picker can precede its larger
+            // host window in the front-to-back list. Prefer the host geometry.
+            if let current = selected,
+               current.bounds.width * current.bounds.height >= bounds.width * bounds.height {
+                continue
+            }
+            selected = (CGWindowID(number.uint32Value), bounds)
         }
-        return nil
+        return selected
     }
 
     static func bounds(from window: [String: Any]) -> CGRect? {

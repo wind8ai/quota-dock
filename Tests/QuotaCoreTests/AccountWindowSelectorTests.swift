@@ -2,6 +2,12 @@ import CoreGraphics
 import Foundation
 
 final class AccountWindowSelectorTests {
+    func testFilePickerInFrontDoesNotReplaceMainWindow() {
+        let picker = window(id: 33, layer: 0, bounds: CGRect(x: 7, y: 5, width: 1512, height: 715))
+        let main = window(id: 22, layer: 0, bounds: CGRect(x: 0, y: 0, width: 1536, height: 1080))
+        precondition(AccountWindowSelector.select(in: [picker, main])?.id == 22,
+                     "File picker replaced the main-window anchor")
+    }
     // Captured mini bounds are deliberately large despite being a floating pet window.
     private func window(id: Int, layer: Int, bounds: CGRect, visible: Bool = true) -> [String: Any] {
         [kCGWindowOwnerName as String: "ChatGPT",

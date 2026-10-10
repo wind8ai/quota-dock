@@ -8,7 +8,9 @@ The gauge is 32 × 96 pt. Its center is 26 pt from the target window's left edge
 
 The target must be an on-screen normal-level window owned by `ChatGPT` or `Codex`, at least 800 pt wide and 600 pt tall. Floating mini/pet windows are excluded. The gauge hides when no main window is found. These offsets match the current account-bar layout; future layout changes may require an update to `Sources/QuotaCore/BadgeLayout.swift`.
 
-Live checks have covered a main window owned by ChatGPT, including visibility while mini is enabled. Separate Codex windows, multiple displays, and fullscreen behavior have not completed full manual acceptance. An earlier report described a gauge that disappeared until the window was resized. That symptom has not reproduced in the current version, so it has not been established as the same cause as the fixed mini-window bug.
+Initial discovery prefers the largest eligible window, then retains that window identity across foreground and Space changes. The gauge hides while the target is offscreen and rediscovers after it closes. Initial selection remains a geometry heuristic and cannot identify every special dialog.
+
+Earlier live checks covered a main window owned by ChatGPT, including visibility while mini is enabled. File pickers, multiple displays, and fullscreen transitions in 3.0.5 still require manual acceptance. Regression tests cover a file picker preceding a larger main window.
 
 ## Readings and cache
 
