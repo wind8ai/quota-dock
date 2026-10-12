@@ -8,7 +8,8 @@ final class BadgeLayoutTests {
             precondition(point.x + BadgeLayout.size.width / 2 == window.minX + 26)
             let bottom = point.y + BadgeLayout.size.height
             let avatarTop = window.maxY - 37
-            precondition(avatarTop - bottom == 8)
+            // Reserve a 44 pt update-button row above the avatar, plus 8 pt spacing.
+            precondition(avatarTop - bottom == 52)
             precondition(BadgeLayout.size == CGSize(width: 32, height: 96))
         }
     }

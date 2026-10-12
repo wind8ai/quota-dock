@@ -4,7 +4,7 @@
 
 ## Window placement
 
-The gauge is 32 × 96 pt. Its center is 26 pt from the target window's left edge, and its bottom is 8 pt above the avatar. The panel offsets are 10 pt from the left and 45 pt from the bottom. Numbers use a white monospaced heavy font up to 13 pt; longer values shrink to fit.
+The gauge is 32 × 96 pt. Its center is 26 pt from the target window's left edge, and its bottom is 52 pt above the avatar, reserving 44 pt for the update/download button. The panel offsets are 10 pt from the left and 89 pt from the bottom. Numbers use a white monospaced heavy font up to 13 pt; longer values shrink to fit.
 
 The target must be an on-screen normal-level window owned by `ChatGPT` or `Codex`, at least 800 pt wide and 600 pt tall. Floating mini/pet windows are excluded. The gauge hides when no main window is found. These offsets match the current account-bar layout; future layout changes may require an update to `Sources/QuotaCore/BadgeLayout.swift`.
 

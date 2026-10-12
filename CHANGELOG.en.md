@@ -2,6 +2,10 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.0.6 · build 19
+
+- Move the gauge up by 44 pt to reserve space for the update/download button above the avatar.
+
 ## 3.0.5 · build 18
 
 - Retain the selected main window across foreground and Space changes instead of adopting a file picker.
