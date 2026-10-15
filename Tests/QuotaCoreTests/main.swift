@@ -86,4 +86,6 @@ for (name, test) in displayTests {
     print("PASS \(name)")
 }
 
-print("All \(readerTests.count + stabilizerTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count) tests passed.")
+PanelVisibilityTests().testRestoresPanelMissingFromScreenEvenWhenAppKitSaysVisible()
+print("PASS testRestoresPanelMissingFromScreenEvenWhenAppKitSaysVisible")
+print("All \(readerTests.count + stabilizerTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + 1) tests passed.")

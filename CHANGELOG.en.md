@@ -2,6 +2,11 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.0.7 · build 20
+
+- Check actual panel visibility once per second while the main window is visible, restoring panels lost after fullscreen or Space transitions despite AppKit reporting visibility.
+- Correct the window-ID lookup API usage to preserve the tracked main window instead of receiving empty descriptions.
+
 ## 3.0.6 · build 19
 
 - Move the gauge up by 44 pt to reserve space for the update/download button above the avatar.

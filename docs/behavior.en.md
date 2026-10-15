@@ -10,6 +10,8 @@ The target must be an on-screen normal-level window owned by `ChatGPT` or `Codex
 
 Initial discovery prefers the largest eligible window, then retains that window identity across foreground and Space changes. The gauge hides while the target is offscreen and rediscovers after it closes. Initial selection remains a geometry heuristic and cannot identify every special dialog.
 
+While the main window is visible, actual panel visibility is checked in the system window list once per second. A panel reported visible by AppKit but absent from the screen is ordered out and back in. Healthy panels are not repeatedly reordered, and recovery is skipped while the main window is offscreen.
+
 Earlier live checks covered a main window owned by ChatGPT, including visibility while mini is enabled. File pickers, multiple displays, and fullscreen transitions in 3.0.5 still require manual acceptance. Regression tests cover a file picker preceding a larger main window.
 
 ## Readings and cache

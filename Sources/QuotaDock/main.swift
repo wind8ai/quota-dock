@@ -55,8 +55,8 @@ private final class AccountBarWindowTracker {
     }
 
     private func description(for windowID: CGWindowID) -> [String: Any]? {
-        let ids = [NSNumber(value: windowID)] as CFArray
-        return (CGWindowListCreateDescriptionFromArray(ids) as? [[String: Any]])?.first
+        return (CGWindowListCopyWindowInfo(.optionIncludingWindow, windowID)
+            as? [[String: Any]])?.first
     }
 
 
@@ -70,6 +70,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     private var quotaRefreshRunning = false
     private var resyncUntil: TimeInterval = 0
     private var lastReorder: TimeInterval = 0
+    private var lastVisibilityCheck: TimeInterval = 0
     private let accountBarWindowTracker = AccountBarWindowTracker()
     private let quotaStabilizer = QuotaStabilizer()
 
@@ -143,9 +144,20 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         badgeView.tick(at: ProcessInfo.processInfo.systemUptime, visible: true,
                        reducedMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
         let now = ProcessInfo.processInfo.systemUptime
+        // AppKit's isVisible can stay true while WindowServer has removed the
+        // panel from the current Space. Check actual visibility at most once
+        // per second, only while the tracked main window is visible.
+        var restore = false
+        if now - lastVisibilityCheck >= 1 {
+            lastVisibilityCheck = now
+            let info = (CGWindowListCopyWindowInfo(.optionIncludingWindow,
+                CGWindowID(panel.windowNumber)) as? [[String: Any]])?.first
+            restore = PanelVisibility.needsRestore(appKitVisible: panel.isVisible, windowInfo: info)
+        }
         // A panel may still report visible while absent from the fullscreen
         // Space. Retry briefly through the Space transition, not indefinitely.
-        if !panel.isVisible || moved || (now < resyncUntil && now - lastReorder >= 0.25) {
+        if restore { panel.orderOut(nil) }
+        if restore || !panel.isVisible || moved || (now < resyncUntil && now - lastReorder >= 0.25) {
             panel.orderFrontRegardless()
             lastReorder = now
         }
