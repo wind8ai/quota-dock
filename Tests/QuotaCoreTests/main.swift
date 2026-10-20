@@ -86,6 +86,15 @@ for (name, test) in displayTests {
     print("PASS \(name)")
 }
 
-PanelVisibilityTests().testRestoresPanelMissingFromScreenEvenWhenAppKitSaysVisible()
-print("PASS testRestoresPanelMissingFromScreenEvenWhenAppKitSaysVisible")
-print("All \(readerTests.count + stabilizerTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + 1) tests passed.")
+let visibility = PanelVisibilityTests()
+let visibilityTests: [(String, () -> Void)] = [
+    ("testRestoresPanelMissingFromScreenEvenWhenAppKitSaysVisible", visibility.testRestoresPanelMissingFromScreenEvenWhenAppKitSaysVisible),
+    ("testRepeatedFailedReorderRecreatesPanel", visibility.testRepeatedFailedReorderRecreatesPanel),
+    ("testRecoveryCooldownAndSuccessfulDisplayReset", visibility.testRecoveryCooldownAndSuccessfulDisplayReset),
+    ("testHiddenTargetDoesNotRecoverOrAccumulateFailures", visibility.testHiddenTargetDoesNotRecoverOrAccumulateFailures)
+]
+for (name, test) in visibilityTests {
+    test()
+    print("PASS \(name)")
+}
+print("All \(readerTests.count + stabilizerTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + visibilityTests.count) tests passed.")

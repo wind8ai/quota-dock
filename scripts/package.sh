@@ -3,6 +3,7 @@ set -euo pipefail
 export LC_ALL=C LANG=C
 project_dir="$(cd "$(dirname "$0")/.." >/dev/null && pwd)"
 "$project_dir/scripts/test.sh"
+bash "$project_dir/scripts/test-app.sh"
 "$project_dir/scripts/build.sh"
 "$project_dir/scripts/sign.sh"
 

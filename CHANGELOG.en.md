@@ -2,6 +2,13 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.0.8 · build 21
+
+- Recreate the native panel after three failed visibility checks instead of indefinitely reordering the same invisible window; apply a ten-second cooldown.
+- Preserve the meter view, quota and animation while closing the old panel. Skip recovery when the main window is hidden.
+- Replace the short Space-transition retry window with the continuous recovery policy.
+- Add recovery sequence tests, a 20-replacement native lifecycle test and read-only `--diagnose` output.
+
 ## 3.0.7 · build 20
 
 - Check actual panel visibility once per second while the main window is visible, restoring panels lost after fullscreen or Space transitions despite AppKit reporting visibility.

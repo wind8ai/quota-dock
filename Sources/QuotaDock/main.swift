@@ -64,13 +64,12 @@ private final class AccountBarWindowTracker {
 
 private final class AppDelegate: NSObject, NSApplicationDelegate {
     private var panel: NSPanel!
-    private var badgeView: QuotaMeterView!
+    private let badgeView = QuotaMeterView(frame: NSRect(origin: .zero, size: badgeSize))
     private var positionTimer: Timer?
     private var quotaTimer: Timer?
     private var quotaRefreshRunning = false
-    private var resyncUntil: TimeInterval = 0
-    private var lastReorder: TimeInterval = 0
     private var lastVisibilityCheck: TimeInterval = 0
+    private var visibilityRecovery = PanelVisibility()
     private let accountBarWindowTracker = AccountBarWindowTracker()
     private let quotaStabilizer = QuotaStabilizer()
 
@@ -112,29 +111,15 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func createPanel() {
-        panel = NSPanel(
-            contentRect: NSRect(origin: .zero, size: badgeSize),
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false
-        )
-        panel.level = .statusBar
-        panel.backgroundColor = .clear
-        panel.isOpaque = false
-        panel.hasShadow = false
-        panel.ignoresMouseEvents = true
-        panel.hidesOnDeactivate = false
-        panel.isReleasedWhenClosed = false
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
-
-        badgeView = QuotaMeterView(frame: NSRect(origin: .zero, size: badgeSize))
-        panel.contentView = badgeView
+        panel = QuotaPanel.replacing(panel, with: badgeView)
     }
 
     @objc private func updatePosition() {
+        let now = ProcessInfo.processInfo.systemUptime
         guard let origin = accountBarWindowTracker.appKitOrigin() else {
-            panel.orderOut(nil)
-            badgeView.tick(at: ProcessInfo.processInfo.systemUptime, visible: false,
+            if panel.isVisible { panel.orderOut(nil) }
+            _ = visibilityRecovery.action(at: now, targetVisible: false, appKitVisible: panel.isVisible, windowInfo: nil)
+            badgeView.tick(at: now, visible: false,
                            reducedMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
             return
         }
@@ -143,40 +128,42 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.setFrameOrigin(origin)
         badgeView.tick(at: ProcessInfo.processInfo.systemUptime, visible: true,
                        reducedMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
-        let now = ProcessInfo.processInfo.systemUptime
         // AppKit's isVisible can stay true while WindowServer has removed the
         // panel from the current Space. Check actual visibility at most once
         // per second, only while the tracked main window is visible.
-        var restore = false
+        var action = PanelVisibility.Action.none
         if now - lastVisibilityCheck >= 1 {
             lastVisibilityCheck = now
             let info = (CGWindowListCopyWindowInfo(.optionIncludingWindow,
                 CGWindowID(panel.windowNumber)) as? [[String: Any]])?.first
-            restore = PanelVisibility.needsRestore(appKitVisible: panel.isVisible, windowInfo: info)
+            action = visibilityRecovery.action(at: now, targetVisible: true,
+                appKitVisible: panel.isVisible, windowInfo: info)
         }
-        // A panel may still report visible while absent from the fullscreen
-        // Space. Retry briefly through the Space transition, not indefinitely.
-        if restore { panel.orderOut(nil) }
-        if restore || !panel.isVisible || moved || (now < resyncUntil && now - lastReorder >= 0.25) {
+        switch action {
+        case .recreate:
+            createPanel()
+            panel.setFrameOrigin(origin)
+        case .reorder:
+            panel.orderOut(nil)
+        case .none:
+            break
+        }
+        if action != .none || !panel.isVisible || moved {
             panel.orderFrontRegardless()
-            lastReorder = now
         }
     }
 
     @objc private func workspaceDidChange(_ notification: Notification) {
-        resyncUntil = ProcessInfo.processInfo.systemUptime + 2
-        lastReorder = 0
-        panel.orderOut(nil)
+        lastVisibilityCheck = 0
         updatePosition()
     }
 
     @objc private func frontApplicationDidChange(_ notification: Notification) {
         // AppKit can retain `isVisible == true` after another application takes
         // the foreground while still removing this non-activating panel from the
-        // visible window stack. Reorder when the foreground application changes
-        // without needlessly issuing an order-front request on every frame.
+        // visible window stack. Probe on foreground changes without first
+        // hiding a healthy panel and counting that as a recovery failure.
         workspaceDidChange(notification)
-        if panel.isVisible { panel.orderFrontRegardless() }
     }
 
     @objc private func refreshQuota() {
@@ -194,6 +181,9 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+if CommandLine.arguments.contains("--diagnose") {
+    exit(WindowDiagnostics.run())
+}
 let app = NSApplication.shared
 private let delegate = AppDelegate()
 app.delegate = delegate

@@ -6,7 +6,7 @@
 
 ![QuotaDock 六种模拟额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=74db1e89de0b)
 
-当前版本 **3.0.7 / build 20**。绿色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`0` 保留红色细线，`--` 表示没有数据或缓存。图中六种额度均为模拟值。
+当前版本 **3.0.8 / build 21**。绿色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`0` 保留红色细线，`--` 表示没有数据或缓存。图中六种额度均为模拟值。
 
 ## 构建与启动
 
@@ -39,7 +39,9 @@ pkill -x QuotaDock
 ## 开发
 
 ```sh
-./scripts/test.sh                  # 34 个回归用例
+./scripts/test.sh                  # 37 个核心回归用例
+bash scripts/test-app.sh           # 原生面板连续重建 20 次，验证额度与动画保留
+build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose  # 只读窗口诊断
 ./scripts/preview-animation.sh     # 合成额度交互预览，关闭窗口退出
 ./scripts/render-states.sh --animate  # 重新生成中文静态图与 GIF，需要 FFmpeg
 ./scripts/package.sh               # 测试、构建、签名、ZIP、校验和
@@ -48,6 +50,7 @@ pkill -x QuotaDock
 `build/`、`dist/`、`.build/` 和运行数据不进入 Git。默认签名为 ad-hoc，尚未完成 Apple 公证。
 
 - [定位、数据来源和已知限制](docs/behavior.md)
+- [用量条消失问题复盘与验证边界](docs/visibility-review.md)
 - [构建、签名和发布](docs/releasing.md)
 - [更新记录](CHANGELOG.md)
 - [用 Codex 复刻的提示词](docs/recreate-prompt.md)
