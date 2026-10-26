@@ -36,10 +36,12 @@ func render(phase: Double, destination: String) throws {
         reference.draw(in: NSRect(x: x + 12, y: 12 + 54, width: 28, height: 29),
                        from: NSRect(x: 44, y: 54, width: 5, height: 29),
                        operation: .copy, fraction: 1)
-        reference.draw(in: NSRect(x: x + 20, y: 12 + 63, width: 12, height: 12),
+        let ringRect = NSRect(x: x + 14.5, y: 12 + 57.5, width: 23, height: 23)
+        // The captured diamond's ink center is (26, 70), one point above
+        // its crop's center. Align that ink center, not the crop rectangle.
+        reference.draw(in: NSRect(x: ringRect.midX - 6, y: ringRect.midY - 7, width: 12, height: 12),
                        from: NSRect(x: 20, y: 63, width: 12, height: 12),
                        operation: .copy, fraction: 1)
-        let ringRect = NSRect(x: x + 14.5, y: 12 + 57.5, width: 23, height: 23)
         let track = NSBezierPath(ovalIn: ringRect)
         track.lineWidth = 1.75
         NSColor(calibratedWhite: 0.65, alpha: state.1 == nil ? 0.24 : 0.35).setStroke()

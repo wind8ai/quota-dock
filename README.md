@@ -4,7 +4,7 @@
 
 把 Codex 的剩余额度放在头像上方的 macOS 液体槽。液面表示剩余比例，底部显示整数；窗口移动时跟随，鼠标可以穿透。
 
-![QuotaDock 六种模拟额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=23e7d7dd89be)
+![QuotaDock 六种模拟额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=092a89893a53)
 
 当前版本 **3.1.1 / build 24**。青蓝色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`0` 保留红色细线，`--` 表示当前没有有效的服务端快照。图中六种额度均为模拟值；下方圆环按同列额度同步绘制，中心图标和头像保留用户提供的截图。无数据圆环使用虚线示意。
 

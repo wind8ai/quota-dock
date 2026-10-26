@@ -4,7 +4,7 @@
 
 A macOS liquid gauge for your remaining Codex quota. It sits above your avatar, follows the main window, and lets mouse clicks pass through.
 
-![QuotaDock in six simulated quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=366bffa31d8f)
+![QuotaDock in six simulated quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=c8d78ba49cfc)
 
 Current version: **3.1.1 / build 24**. Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` leaves a thin red line; `--` means no valid server snapshot is currently available. The six quota values are simulated. The lower ring follows the same simulated value as its column, with a dashed ring for unavailable data. The center icon and avatar are preserved from the user's screenshot.
 
