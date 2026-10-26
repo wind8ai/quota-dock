@@ -71,7 +71,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     private var lastVisibilityCheck: TimeInterval = 0
     private var visibilityRecovery = PanelVisibility()
     private let accountBarWindowTracker = AccountBarWindowTracker()
-    private let quotaStabilizer = QuotaStabilizer()
+    private var quotaSnapshot: AccountQuota?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -91,6 +91,10 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.addObserver(
             self, selector: #selector(workspaceDidChange),
             name: NSApplication.didChangeScreenParametersNotification, object: nil
+        )
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self, selector: #selector(quotaDidWake),
+            name: NSWorkspace.didWakeNotification, object: nil
         )
 
         positionTimer = Timer(
@@ -116,6 +120,10 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func updatePosition() {
         let now = ProcessInfo.processInfo.systemUptime
+        if let quota = quotaSnapshot, !quota.isFresh(at: Date()) {
+            quotaSnapshot = nil
+            badgeView.setPercent(nil, animated: false)
+        }
         guard let origin = accountBarWindowTracker.appKitOrigin() else {
             if panel.isVisible { panel.orderOut(nil) }
             _ = visibilityRecovery.action(at: now, targetVisible: false, appKitVisible: panel.isVisible, windowInfo: nil)
@@ -170,17 +178,31 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         guard !quotaRefreshRunning else { return }
         quotaRefreshRunning = true
         DispatchQueue.global(qos: .utility).async { [weak self] in
-            let snapshot = QuotaReader.latestSnapshot()
+            let result = CodexQuotaSource.read()
             DispatchQueue.main.async {
                 guard let self = self else { return }
-                self.badgeView.setPercent(self.quotaStabilizer.displayPercent(for: snapshot),
+                if case .success(let quota) = result, quota.isFresh(at: Date()) {
+                    self.quotaSnapshot = quota
+                } else {
+                    self.quotaSnapshot = nil
+                }
+                self.badgeView.setPercent(self.quotaSnapshot?.remainingPercent,
                                           animated: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
                 self.quotaRefreshRunning = false
             }
         }
     }
+
+    @objc private func quotaDidWake(_ notification: Notification) {
+        quotaSnapshot = nil
+        badgeView.setPercent(nil, animated: false)
+        refreshQuota()
+    }
 }
 
+if CommandLine.arguments.contains("--diagnose-quota") {
+    exit(CodexQuotaSource.diagnose())
+}
 if CommandLine.arguments.contains("--diagnose") {
     exit(WindowDiagnostics.run())
 }

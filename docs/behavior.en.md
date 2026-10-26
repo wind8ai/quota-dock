@@ -16,16 +16,28 @@ Run `build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose` for read-only diag
 
 Earlier live checks covered a main window owned by ChatGPT, including visibility while mini is enabled. File pickers, multiple displays, and fullscreen transitions in 3.0.5 still require manual acceptance. Regression tests cover a file picker preceding a larger main window.
 
-## Readings and cache
+## Source and freshness
 
-The reader checks the 12 most recently modified JSONL session files, reading at most the final 2 MB of each. It accepts `primary.used_percent` from `event_msg / token_count` records with `limit_id=codex`. Both `payload.rate_limits` and `payload.info.rate_limits` are supported.
+Use a local Codex CLI signed in with ChatGPT and the official stdio `account/rateLimits/read` method. Read at launch and every 30 seconds. Each read uses a short-lived child with a 15-second communication timeout; close stdin first and terminate only that child if necessary. No HTTP listener or model task is started.
 
-Fractional values are retained internally and displayed as rounded whole numbers from 0 to 100, without a percent sign. Integer source readings do not gain invented precision. If a timestamp cannot be parsed, the file modification time is used.
+Prefer `rateLimitsByLimitId.codex`. Only when that map is absent, accept a legacy result explicitly identified as codex. Select 300 minutes (five hours) by duration, otherwise 10080 minutes (weekly). Do not infer a period from the primary slot or use Spark, credits or reserve. Other window lengths currently produce unknown.
 
-Cycles are identified by `resets_at`, with a 120-second tolerance for jitter. Across files, the reader selects the newest cycle, then its latest observation. The cache only decreases within a cycle; a newer cycle may increase the value.
+Remaining quota is `100 - usedPercent`, preserving source fractions and displaying rounded integers. New server values may increase or decrease. Failure shows `--`; an in-memory reading expires after 60 seconds or at resetsAt, whichever comes first. Never infer a refill to 100%. Wake clears the old display and refreshes.
 
-The cache stores up to five readings under `quota-history-v2` for bundle identifier `com.ben.codex-quota-badge`. When a precise reading first replaces a legacy integer cache, it may correct a rounding difference of less than 0.5 percentage points. Once the precision marker is written, the decrease-only rule resumes. Upgrades do not clear the cache.
+Version 3.1.0 removes the JSONL reader, QuotaStabilizer and persistent quota cache. Any old `quota-history-v2` preference is ignored, not used as fallback.
+
+## Authentication and diagnostics
+
+Look for codex on PATH and common CLI installation paths, then inside the installed Codex/ChatGPT app. Missing CLI, absent ChatGPT login, API-key-only auth, incompatible protocol or unsupported quota windows produce unknown. The tool never logs in, switches accounts or reads token files itself.
+
+Before and after the quota read, compare the email and plan type returned by account/read. Keep these only in memory, never in diagnostics or cache. This API does not expose the full desktop-selected account/workspace identity, so the comparison cannot prove that desktop and CLI accounts match.
+
+```sh
+build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota
+```
+
+Exit 0 reports source, period, remaining quota, observation time and reset time. Exit 1 reports a bounded error category, without email, tokens or credit balances.
 
 ## Limitations
 
-Only existing local receipts are read. A 30-second refresh does not provide real-time server quota. The cache is not partitioned by account, and not every window layout is recognized. Positioning uses fixed account-bar geometry rather than avatar pixel detection. A file whose tail cannot be decoded as UTF-8 is skipped for that read.
+A service snapshot is more direct than session logs but still polled about every 30 seconds, not equivalent to native push freshness. Compare the same account and period at similar observation times. The single gauge does not display both windows, credits or reserve. Positioning remains fixed account-bar geometry rather than avatar pixel detection; existing multi-display and long-running acceptance limits remain.

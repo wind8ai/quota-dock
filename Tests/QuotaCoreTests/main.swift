@@ -1,45 +1,21 @@
 import Foundation
 
-// Built without optimization: native preconditions fail the process on a regression.
-let reader = QuotaReaderTests()
-let readerTests: [(String, () throws -> Void)] = [
-    ("testReadsMainPrimaryAndIgnoresNewerSpark", reader.testReadsMainPrimaryAndIgnoresNewerSpark),
-    ("testSupportsNestedRateLimits", reader.testSupportsNestedRateLimits),
-    ("testUsesLastValidEventWithinFile", reader.testUsesLastValidEventWithinFile),
-    ("testNewResetCycleWinsOverNewerObservationOfOldCycle", reader.testNewResetCycleWinsOverNewerObservationOfOldCycle),
-    ("testWithin120SecondsUsesNewestObservation", reader.testWithin120SecondsUsesNewestObservation),
-    ("testClampsAndPreservesFractionalPercent", reader.testClampsAndPreservesFractionalPercent),
-    ("testMissingOrInvalidDataReturnsNil", reader.testMissingOrInvalidDataReturnsNil),
-    ("testFallbackToFileModificationDate", reader.testFallbackToFileModificationDate),
-    ("testOnlySearchesTwelveMostRecentlyModifiedFiles", reader.testOnlySearchesTwelveMostRecentlyModifiedFiles),
-    ("testReadsTailOfLargeFile", reader.testReadsTailOfLargeFile)
+let account = AccountQuotaTests()
+let accountTests: [(String, () -> Void)] = [
+    ("testUsesCodexBucketAndWindowDurationRatherThanPrimaryPosition", account.testUsesCodexBucketAndWindowDurationRatherThanPrimaryPosition),
+    ("testWeeklyOnlyAndServerCorrectionsRemainAuthoritative", account.testWeeklyOnlyAndServerCorrectionsRemainAuthoritative),
+    ("testRejectsMissingCodexBucketEvenWhenLegacyExists", account.testRejectsMissingCodexBucketEvenWhenLegacyExists),
+    ("testRejectsInvalidExpiredAndUnsupportedWindows", account.testRejectsInvalidExpiredAndUnsupportedWindows),
+    ("testFreshnessExpiresAtResetOrAfterOneMinute", account.testFreshnessExpiresAtResetOrAfterOneMinute)
 ]
-for (name, test) in readerTests {
-    try reader.setUp()
-    defer { try! reader.tearDown() }
-    try test()
-    print("PASS \(name)")
-}
-
-let stabilizer = QuotaStabilizerTests()
-let stabilizerTests: [(String, () throws -> Void)] = [
-    ("testEmptyCacheShowsUnknown", stabilizer.testEmptyCacheShowsUnknown),
-    ("testSameCycleDecreasesButDoesNotIncrease", stabilizer.testSameCycleDecreasesButDoesNotIncrease),
-    ("testJitterBoundaryDoesNotResetCache", stabilizer.testJitterBoundaryDoesNotResetCache),
-    ("testNewCycleCanIncreaseQuotaAndOldCycleCannotReplaceIt", stabilizer.testNewCycleCanIncreaseQuotaAndOldCycleCannotReplaceIt),
-    ("testCacheSurvivesRecreationAndMissingRead", stabilizer.testCacheSurvivesRecreationAndMissingRead),
-    ("testReadsLegacyV2CacheSchema", stabilizer.testReadsLegacyV2CacheSchema),
-    ("testCorruptOrInvalidCacheIsIgnored", stabilizer.testCorruptOrInvalidCacheIsIgnored),
-    ("testHistoryIsBoundedAndEqualObservationDoesNotAppend", stabilizer.testHistoryIsBoundedAndEqualObservationDoesNotAppend),
-    ("testFractionalCacheSurvivesRestartAndOnlyDecreases", stabilizer.testFractionalCacheSurvivesRestartAndOnlyDecreases),
-    ("testLegacyRoundingCanBeCorrectedOnceWithinHalfPoint", stabilizer.testLegacyRoundingCanBeCorrectedOnceWithinHalfPoint)
+for (name, test) in accountTests { test(); print("PASS \(name)") }
+let client = CodexQuotaClientTests()
+let clientTests: [(String, () -> Void)] = [
+    ("testReadsOfficialProtocolAndIgnoresNotifications", client.testReadsOfficialProtocolAndIgnoresNotifications),
+    ("testRejectsAccountChange", client.testRejectsAccountChange),
+    ("testTimeoutAndProtocolErrorsAreBounded", client.testTimeoutAndProtocolErrorsAreBounded)
 ]
-for (name, test) in stabilizerTests {
-    stabilizer.setUp()
-    defer { stabilizer.tearDown() }
-    try test()
-    print("PASS \(name)")
-}
+for (name, test) in clientTests { test(); print("PASS \(name)") }
 
 let layout = BadgeLayoutTests()
 let layoutTests: [(String, () throws -> Void)] = [
@@ -97,4 +73,4 @@ for (name, test) in visibilityTests {
     test()
     print("PASS \(name)")
 }
-print("All \(readerTests.count + stabilizerTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + visibilityTests.count) tests passed.")
+print("All \(accountTests.count + clientTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + visibilityTests.count) tests passed.")

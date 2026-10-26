@@ -6,7 +6,7 @@ A macOS liquid gauge for your remaining Codex quota. It sits above your avatar, 
 
 ![QuotaDock in six simulated quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=5479cd90a0a4)
 
-Current version: **3.0.9 / build 22**. Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` leaves a thin red line; `--` means no reading or cached value is available. The preview uses simulated values and a schematic native ring.
+Current version: **3.1.0 / build 23**. Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` leaves a thin red line; `--` means no reading or cached value is available. The preview uses simulated values and a schematic native ring.
 
 ## Build and run
 
@@ -30,18 +30,21 @@ pkill -x QuotaDock
 
 ## How it works
 
-Every 30 seconds, QuotaDock reads the primary `limit_id=codex` quota from local `token_count` events in `~/.codex/sessions`. It excludes the separate Spark quota, makes no quota-service requests, and does not modify the ChatGPT/Codex app bundle.
+Every 30 seconds, query account limits through the local Codex CLI's official app-server protocol. Prefer the five-hour window, otherwise weekly. Use only the codex bucket, not Spark, credits or reserve.
 
-Remaining quota is `100 - used_percent`, rounded to a whole number for display. The cache survives restarts and supplies the last value when no fresh reading is available. Readings can lag actual usage, and the cache is not separated by account.
+Remaining quota is `100 - usedPercent`, rounded for display. New server values may increase or decrease. Failure, a reading older than one minute, or a reset shows `--`. No session-log scanning or persistent quota fallback. Each query has a timeout and cleans up its child process.
+
+Runtime requires a Codex CLI signed in with ChatGPT. Locate it through PATH, common installation paths, or the installed Codex/ChatGPT app. No direct token reading, model task or desktop app modification. The desktop-selected account may differ from the CLI account; compare the same identity and period.
 
 The liquid has two surface waves and rising bubbles. Level changes take about 0.6 seconds. Animation pauses when the target window is hidden and stays still when macOS Reduce Motion is enabled.
 
 ## Development
 
 ```sh
-./scripts/test.sh                     # 37 core regression cases
+./scripts/test.sh                     # 25 core/offline protocol regression cases
 bash scripts/test-app.sh              # Native panel lifecycle: 20 replacements preserve quota and animation
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose  # Read-only window diagnostics
+build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota  # Live account quota (requires login and network)
 ./scripts/preview-animation.sh        # Synthetic readings; close the window to quit
 ./scripts/render-states.sh --english --animate  # English preview; requires FFmpeg
 ./scripts/package.sh                  # Test, build, sign, ZIP, and checksum

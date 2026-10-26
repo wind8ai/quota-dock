@@ -2,6 +2,15 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.1.0 · build 23
+
+- Read account limits through the official Codex app-server `account/rateLimits/read` every 30 seconds instead of scanning JSONL files.
+- Prefer the codex bucket and select the five-hour window by duration, otherwise the weekly window. Exclude Spark.
+- Accept authoritative increases and decreases; remove the old decrease-only cache and log reader.
+- Show `--` on failure, after one minute, or at reset. Refresh after wake.
+- Check account identity before and after reads; bound process lifetime and add account-redacted `--diagnose-quota` output.
+- Requires a local Codex CLI signed in with ChatGPT. No token reading or private native HTTP/push calls. Desktop-selected and CLI accounts may differ.
+
 ## 3.0.9 · build 22
 
 - Raise the gauge another 18 pt to separate it from the native usage ring; resize to 36 × 104 pt.

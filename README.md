@@ -6,7 +6,7 @@
 
 ![QuotaDock 六种模拟额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=3f7738cc93c1)
 
-当前版本 **3.0.9 / build 22**。青蓝色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`0` 保留红色细线，`--` 表示没有数据或缓存。图中六种额度均为模拟值，下方原生圆环为布局示意。
+当前版本 **3.1.0 / build 23**。青蓝色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`0` 保留红色细线，`--` 表示没有数据或缓存。图中六种额度均为模拟值，下方原生圆环为布局示意。
 
 ## 构建与启动
 
@@ -30,18 +30,21 @@ pkill -x QuotaDock
 
 ## 它读取什么
 
-每 30 秒从本机 `~/.codex/sessions` 的 `token_count` 回执读取 `limit_id=codex` 的主额度，过滤 Spark 独立额度。不会请求额度服务，也不修改 ChatGPT/Codex 应用包。
+每 30 秒通过本机 Codex CLI 的官方 app-server 协议读取账户额度。优先显示 5 小时窗口，没有时显示每周窗口；只使用 codex 桶，不使用 Spark、credits 或 reserve。
 
-剩余额度按 `100 - used_percent` 计算，显示为四舍五入后的整数。缓存跨重启保留，暂时读不到回执时沿用缓存。显示可能滞后于实际使用量，账号切换没有独立缓存分区。
+剩余额度按 `100 - usedPercent` 计算，显示四舍五入整数。服务端新值可升可降。读取失败、快照超过一分钟或已到重置时间时显示 `--`，不再扫描会话日志或使用旧跨重启额度缓存。每次查询都有超时，并清理自己的子进程。
+
+运行时需要可用的 Codex CLI 和 ChatGPT 登录。自动查找 PATH、常用 CLI 安装位置及已安装 Codex/ChatGPT 应用内的 CLI。不读取令牌，不发起模型任务，不修改桌面应用；桌面选中的账号与 CLI 登录账号可能不同，比较原生圆环时须核对账号与周期。
 
 液面有两层波动和上浮气泡，额度变化约 0.6 秒过渡。目标窗口隐藏时暂停动画；开启 macOS 的“减少动态效果”时保持静止。
 
 ## 开发
 
 ```sh
-./scripts/test.sh                  # 37 个核心回归用例
+./scripts/test.sh                  # 25 个核心／离线协议回归用例
 bash scripts/test-app.sh           # 原生面板连续重建 20 次，验证额度与动画保留
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose  # 只读窗口诊断
+build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota  # 读取真实账户额度（需要登录和网络）
 ./scripts/preview-animation.sh     # 合成额度交互预览，关闭窗口退出
 ./scripts/render-states.sh --animate  # 重新生成中文静态图与 GIF，需要 FFmpeg
 ./scripts/package.sh               # 测试、构建、签名、ZIP、校验和
