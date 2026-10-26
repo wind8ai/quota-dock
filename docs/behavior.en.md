@@ -24,9 +24,11 @@ Inspect the 12 most recently modified JSONL files, reading up to the final 2 MB 
 
 Select the newest ISO 8601 observation timestamp, with or without fractional seconds. Never use file modification time as observation time. Skip truncated or incomplete JSON lines. If the newest record has expired, do not resurrect an older reset window.
 
-Remaining quota is 100 - used_percent, preserving fractions and rounding for display. Allow corrected values to rise. A receipt expires after 15 minutes or at resets_at, whichever comes first. Missing valid data shows unknown, never an assumed refill to 100%. Ignore the old quota-history-v2 preference.
+Remaining quota is 100 - used_percent, preserving fractions and rounding for display. Allow corrected values to rise. After 15 minutes, retain the number, show a small clock and pause the bubbles. Do not retain a reading past resets_at or infer a refill to 100%. Show unknown when no reading exists for the current period.
 
 Read at a minimum interval of 5 seconds while visible and 30 seconds while hidden. Check scheduling every second; reads never overlap. Missing local data no longer triggers network-style backoff. Wake clears the old display and reads again.
+
+Persist the last receipt in app preferences, scoped by session directory, and restore it after restart. Older records cannot overwrite newer ones; a failed read does not erase an in-period cache. Preserve the original observation timestamp. Reject expired or invalid values and never import quota-history-v2. Diagnostics read the cache without changing it.
 
 ## Diagnostics
 
@@ -34,12 +36,12 @@ Read at a minimum interval of 5 seconds while visible and 30 seconds while hidde
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota
 ```
 
-Exit 0 reports local-session-log, period, remaining quota, observation time and age. Exit 1 means no recent valid receipt. No conversation text, filenames, email or tokens are printed.
+Exit 0 reports local-session-log, period, last quota, observation time and age, with recent-local-observation or cached-local-observation status. Exit 1 means no usable reading in the current period. No conversation text, filenames, email or tokens are printed.
 
 ## Limitations
 
-Logs update only when Codex writes quota receipts. Idle sessions, usage on other devices or missing receipts can differ from the native live ring. Fifteen minutes is the maximum display age, not a freshness guarantee.
+Logs update only when Codex writes quota receipts. Idle sessions, usage on other devices or missing receipts can differ from the native live ring. The clock marks a reading older than 15 minutes, not a current server value.
 
-Logs from different accounts can coexist, so the current desktop account cannot be reliably identified. Searching only 12 file tails can miss other receipts. A permanent cache would not resolve these limits.
+Logs from different accounts can coexist, so the current desktop account cannot be reliably identified. Searching only 12 file tails can miss other receipts. Directory-scoped caching does not identify accounts that share one directory.
 
-The CLI workspace-routing timeout and request failure remain unresolved. This release returns to local mode as requested. Existing window-placement, multi-display and sleep/wake acceptance limits remain unchanged.
+Account queries can run without a chat task. A new probe succeeded, but that does not establish that the intermittent CLI failures are fixed. The user chose to keep CLI-free mode, so this release does not query the server automatically. Existing window-placement, multi-display and sleep/wake acceptance limits remain unchanged.

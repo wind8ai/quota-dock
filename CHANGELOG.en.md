@@ -2,6 +2,13 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.1.3 · build 26
+
+- Keep the last quota after 15 idle minutes, mark it with a small clock and pause bubbles instead of clearing it.
+- Persist receipts per log directory across restarts. Accept newer increases or decreases; failed reads retain an in-period cache.
+- Stop showing old values at reset without guessing a refill to 100%. Keep CLI-free mode.
+- Add cache, directory isolation, reset and read-only diagnostic tests, plus cached-state previews.
+
 ## 3.1.2 · build 25
 
 - Restore local JSONL receipts after persistent CLI routing and request failures, as requested. No CLI launch or quota API call.

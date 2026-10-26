@@ -1,7 +1,7 @@
 import Foundation
 import CoreFoundation
 
-struct AccountQuota {
+struct AccountQuota: Codable, Equatable {
     let remainingPercent: Double
     let windowDurationMins: Int
     let resetsAt: TimeInterval
@@ -9,7 +9,14 @@ struct AccountQuota {
 
     func isFresh(at now: Date) -> Bool {
         let age = now.timeIntervalSince(observedAt)
-        return age >= 0 && age < 900 && now.timeIntervalSince1970 < resetsAt
+        return isUsable(at: now) && age < 900
+    }
+
+    func isUsable(at now: Date) -> Bool {
+        remainingPercent.isFinite && (0...100).contains(remainingPercent)
+            && [300, 10080].contains(windowDurationMins)
+            && observedAt.timeIntervalSince1970.isFinite && observedAt <= now
+            && resetsAt.isFinite && resetsAt > now.timeIntervalSince1970
     }
 
     static func parseLimits(_ limits: [String: Any], observedAt: Date) -> AccountQuota? {

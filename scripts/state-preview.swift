@@ -6,6 +6,7 @@ let reference = NSImage(contentsOfFile: CommandLine.arguments[2])!
 reference.size = NSSize(width: 51, height: 229)
 let canvas = NSSize(width: 424, height: 270)
 let english = CommandLine.arguments.contains("--english")
+let cachedPreview = CommandLine.arguments.contains("--cached")
 func label(_ text: String, at point: NSPoint, size: CGFloat, color: NSColor) {
     NSAttributedString(string: text, attributes: [.font: NSFont.systemFont(ofSize: size, weight: .medium),
         .foregroundColor: color]).draw(at: point)
@@ -64,7 +65,8 @@ func render(phase: Double, destination: String) throws {
         }
         let view = QuotaMeterView(frame: NSRect(origin: .zero, size: QuotaMeterView.size))
         view.remainingPercent = state.1
-        view.phase = phase
+        view.isStale = cachedPreview && state.1 != nil
+        view.phase = cachedPreview ? 0 : phase
         NSGraphicsContext.saveGraphicsState()
         (AffineTransform(translationByX: x + BadgeLayout.avatarCenterX - BadgeLayout.size.width / 2,
                          byY: 12 + BadgeLayout.avatarTopFromBottom + BadgeLayout.avatarGap) as NSAffineTransform).concat()

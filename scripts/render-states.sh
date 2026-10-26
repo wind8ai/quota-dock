@@ -5,13 +5,16 @@ project_dir="$(cd "$(dirname "$0")/.." >/dev/null && pwd)"
 asset_name="quota-dock"
 language_arg=--chinese
 animate=false
+cache_arg=""
 for option in "$@"; do
     case "$option" in
         --english) asset_name="quota-dock-en"; language_arg=--english ;;
         --animate) animate=true ;;
-        *) echo "Usage: $0 [--english] [--animate]" >&2; exit 1 ;;
+        --cached) cache_arg=--cached ;;
+        *) echo "Usage: $0 [--english] [--animate] [--cached]" >&2; exit 1 ;;
     esac
 done
+if [ -n "$cache_arg" ]; then asset_name="${asset_name}-cached"; fi
 mkdir -p "$project_dir/.build" "$project_dir/docs/images"
 preview_dir="$(mktemp -d "$project_dir/.build/preview.XXXXXX")"
 trap 'rm -rf "$preview_dir"' EXIT
@@ -24,12 +27,12 @@ xcrun swiftc -target "$(uname -m)-apple-macosx11.0" \
     "$project_dir/Sources/QuotaDock/QuotaMeterView.swift" "$preview_dir/main.swift" \
     -o "$preview_dir/render-states"
 "$preview_dir/render-states" "$project_dir/docs/images/$asset_name-states.png" \
-    "$project_dir/docs/images/sidebar-reference.png" "$language_arg"
+    "$project_dir/docs/images/sidebar-reference.png" "$language_arg" "$cache_arg"
 if $animate; then
     command -v ffmpeg >/dev/null || { echo 'Animated export requires ffmpeg.' >&2; exit 1; }
     mkdir -p "$preview_dir/frames"
     "$preview_dir/render-states" "$preview_dir/frames" \
-        "$project_dir/docs/images/sidebar-reference.png" --frames "$language_arg"
+        "$project_dir/docs/images/sidebar-reference.png" --frames "$language_arg" "$cache_arg"
     ffmpeg -hide_banner -loglevel error -y -framerate 20 \
         -i "$preview_dir/frames/frame-%03d.png" \
         -filter_complex '[0:v]split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a' \

@@ -70,11 +70,13 @@ final class LocalQuotaReaderTests {
         }
     }
 
-    func testRejectsOldFutureAndMissingTimestamp() throws {
+    func testKeepsOldInPeriodButRejectsFutureAndMissingTimestamp() throws {
         try directory { root in
             let file = root.appendingPathComponent("session.jsonl")
             try event(at: 1000).write(to: file)
-            precondition(LocalQuotaReader.latest(in: root, now: Date(timeIntervalSince1970: 1900)) == nil)
+            let old = LocalQuotaReader.latest(in: root, now: Date(timeIntervalSince1970: 1900))
+            precondition(old?.remainingPercent == 75)
+            precondition(old?.isFresh(at: Date(timeIntervalSince1970: 1900)) == false)
             try event(at: 2000).write(to: file)
             precondition(LocalQuotaReader.latest(in: root, now: Date(timeIntervalSince1970: 1000)) == nil)
             var object = try JSONSerialization.jsonObject(with: event()) as! [String: Any]

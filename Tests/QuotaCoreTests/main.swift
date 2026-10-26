@@ -1,5 +1,16 @@
 import Foundation
 
+let cache = QuotaCacheTests()
+let cacheTests: [(String, () -> Void)] = [
+    ("testIdleKeepsLastReadingWithStaleStatus", cache.testIdleKeepsLastReadingWithStaleStatus),
+    ("testPersistsAcrossRestartAndSeparatesDirectories", cache.testPersistsAcrossRestartAndSeparatesDirectories),
+    ("testMissingAndOlderObservationsDoNotRefreshCacheAge", cache.testMissingAndOlderObservationsDoNotRefreshCacheAge),
+    ("testResetDoesNotInventARefill", cache.testResetDoesNotInventARefill),
+    ("testInvalidReadingsAreRejected", cache.testInvalidReadingsAreRejected),
+    ("testDiagnosticPreviewDoesNotPersist", cache.testDiagnosticPreviewDoesNotPersist)
+]
+for (name, test) in cacheTests { test(); print("PASS \(name)") }
+
 
 let refresh = QuotaRefreshScheduleTests()
 let refreshTests: [(String, () -> Void)] = [
@@ -25,7 +36,7 @@ let localTests: [(String, () throws -> Void)] = [
     ("testNestedReceiptsIgnoreNewerSpark", local.testNestedReceiptsIgnoreNewerSpark),
     ("testNewerCorrectionCanIncreaseRemaining", local.testNewerCorrectionCanIncreaseRemaining),
     ("testExpiredNewestDoesNotResurrectOlderWindow", local.testExpiredNewestDoesNotResurrectOlderWindow),
-    ("testRejectsOldFutureAndMissingTimestamp", local.testRejectsOldFutureAndMissingTimestamp),
+    ("testKeepsOldInPeriodButRejectsFutureAndMissingTimestamp", local.testKeepsOldInPeriodButRejectsFutureAndMissingTimestamp),
     ("testTruncatedUTF8AndPartialJSONDoNotHideValidTail", local.testTruncatedUTF8AndPartialJSONDoNotHideValidTail),
     ("testOnlyTwelveRecentFilesAreRead", local.testOnlyTwelveRecentFilesAreRead)
 ]
@@ -87,4 +98,4 @@ for (name, test) in visibilityTests {
     test()
     print("PASS \(name)")
 }
-print("All \(refreshTests.count + accountTests.count + localTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + visibilityTests.count) tests passed.")
+print("All \(cacheTests.count + refreshTests.count + accountTests.count + localTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + visibilityTests.count) tests passed.")

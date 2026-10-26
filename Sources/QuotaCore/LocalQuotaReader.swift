@@ -50,7 +50,7 @@ enum LocalQuotaReader {
                 }
             }
         }
-        guard let quota = newest?.quota, quota.isFresh(at: now) else { return nil }
+        guard let quota = newest?.quota, quota.isUsable(at: now) else { return nil }
         return quota
     }
 }

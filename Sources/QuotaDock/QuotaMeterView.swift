@@ -5,6 +5,9 @@ final class QuotaMeterView: NSView {
     static let size = BadgeLayout.size
     private var animation = QuotaMeterAnimation()
     private var lastTick: TimeInterval?
+    var isStale = false {
+        didSet { if oldValue != isStale { needsDisplay = true } }
+    }
 
     var remainingPercent: Double? {
         get { animation.targetPercent }
@@ -25,7 +28,7 @@ final class QuotaMeterView: NSView {
     func tick(at now: TimeInterval, visible: Bool, reducedMotion: Bool) {
         let delta = lastTick.map { min(0.1, max(0, now - $0)) } ?? 0
         lastTick = now
-        if animation.advance(by: delta, visible: visible, reducedMotion: reducedMotion) {
+        if animation.advance(by: delta, visible: visible, reducedMotion: reducedMotion || isStale) {
             needsDisplay = true
         }
     }
@@ -67,6 +70,18 @@ final class QuotaMeterView: NSView {
         shell.lineWidth = 1.25
         shell.stroke()
         drawPercent(in: chamberRect, clip: chamber)
+        if isStale { drawStaleMarker() }
+    }
+
+    private func drawStaleMarker() {
+        let center = NSPoint(x: bounds.midX, y: bounds.maxY - 11)
+        let clock = NSBezierPath(ovalIn: NSRect(x: center.x - 3.5, y: center.y - 3.5, width: 7, height: 7))
+        clock.move(to: NSPoint(x: center.x, y: center.y + 2))
+        clock.line(to: center)
+        clock.line(to: NSPoint(x: center.x + 2, y: center.y - 1))
+        NSColor(srgbRed: 1, green: 0.73, blue: 0.25, alpha: 1).setStroke()
+        clock.lineWidth = 0.9
+        clock.stroke()
     }
 
     private func capsule(_ rect: NSRect) -> NSBezierPath {

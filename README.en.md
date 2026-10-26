@@ -4,7 +4,7 @@
 
 Show remaining Codex quota above your avatar on macOS. The liquid shows the remaining share, the number shows the percentage, and the gauge follows the window without blocking clicks.
 
-Current version: 3.1.2 / build 25.
+Current version: 3.1.3 / build 26.
 
 ![QuotaDock in six quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=bc6f422990d3)
 
@@ -32,7 +32,7 @@ Read Codex session logs under `CODEX_HOME/sessions`, defaulting to `~/.codex/ses
 
 Read about every 5 seconds while the main window is visible, otherwise every 30 seconds. Use codex quota receipts only, preferring five-hour limits and otherwise weekly. Select by observation time and allow both increases and decreases.
 
-This is the latest recorded reading, not a live server query. Show `--` after 15 minutes without a fresh receipt or at reset. There is no persistent quota cache. Logs from multiple accounts may coexist, so they cannot reliably identify the account currently selected in the desktop app.
+This is the last recorded reading, not a live server query. Keep it while idle and across restarts. After 15 minutes without an update, show a small clock and pause the bubbles. Show `--` only without a reading or after the quota period resets. [View the cached state](docs/images/quota-dock-en-cached-states.png). Logs from multiple accounts may coexist, so they cannot reliably identify the account currently selected in the desktop app.
 
 ## Troubleshooting
 

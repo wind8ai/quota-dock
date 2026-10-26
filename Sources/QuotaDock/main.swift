@@ -72,7 +72,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     private var lastVisibilityCheck: TimeInterval = 0
     private var visibilityRecovery = PanelVisibility()
     private let accountBarWindowTracker = AccountBarWindowTracker()
-    private var quotaSnapshot: AccountQuota?
+    private lazy var quotaCache = QuotaCache(namespace: LocalQuotaSource.directory.path)
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -122,10 +122,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc private func updatePosition() {
         let now = ProcessInfo.processInfo.systemUptime
-        if let quota = quotaSnapshot, !quota.isFresh(at: Date()) {
-            quotaSnapshot = nil
-            badgeView.setPercent(nil, animated: false)
-        }
+        displayQuota(animated: false)
         guard let origin = accountBarWindowTracker.appKitOrigin() else {
             quotaTargetVisible = false
             if panel.isVisible { panel.orderOut(nil) }
@@ -189,23 +186,27 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
             let observation = LocalQuotaSource.read()
             DispatchQueue.main.async {
                 guard let self = self else { return }
-                if let quota = observation, quota.isFresh(at: Date()) {
-                    self.quotaSnapshot = quota
-                } else {
-                    self.quotaSnapshot = nil
-                }
-                self.badgeView.setPercent(self.quotaSnapshot?.remainingPercent,
-                                          animated: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
+                self.quotaCache.update(observation, at: Date())
+                self.displayQuota(animated: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
                 self.quotaRefreshSchedule.completed()
             }
         }
     }
 
     @objc private func quotaDidWake(_ notification: Notification) {
-        quotaSnapshot = nil
-        badgeView.setPercent(nil, animated: false)
+        displayQuota(animated: false)
         quotaRefreshSchedule.woke()
         refreshQuota()
+    }
+
+    private func displayQuota(animated: Bool) {
+        let now = Date()
+        let quota = quotaCache.current(at: now)
+        let stale = quota.map { !$0.isFresh(at: now) } ?? false
+        if badgeView.remainingPercent != quota?.remainingPercent {
+            badgeView.setPercent(quota?.remainingPercent, animated: animated && !stale)
+        }
+        badgeView.isStale = stale
     }
 }
 
