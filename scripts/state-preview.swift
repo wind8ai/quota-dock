@@ -1,8 +1,7 @@
 import AppKit
 
 
-// Keep the user's real sidebar, native indicator and avatar. Only the large
-// QuotaDock gauge is replaced with simulated values from the production view.
+// Keep the user's sidebar, center icon and avatar; simulate both quota displays.
 let reference = NSImage(contentsOfFile: CommandLine.arguments[2])!
 reference.size = NSSize(width: 51, height: 229)
 let canvas = NSSize(width: 424, height: 270)
@@ -30,10 +29,37 @@ func render(phase: Double, destination: String) throws {
         label(state.0, at: NSPoint(x: x + 9, y: 245), size: 9, color: .lightGray)
         reference.draw(in: NSRect(x: x, y: 12, width: 51, height: 229))
         // Replace only the captured gauge using adjacent clean sidebar pixels.
-        // The native ring (including its center icon) and avatar stay intact.
+        // The avatar stays intact; redraw only the native ring's progress below.
         reference.draw(in: NSRect(x: x + 5, y: 12 + 104, width: 40, height: 110),
                        from: NSRect(x: 44, y: 104, width: 5, height: 110),
                        operation: .copy, fraction: 1)
+        reference.draw(in: NSRect(x: x + 12, y: 12 + 54, width: 28, height: 29),
+                       from: NSRect(x: 44, y: 54, width: 5, height: 29),
+                       operation: .copy, fraction: 1)
+        reference.draw(in: NSRect(x: x + 20, y: 12 + 63, width: 12, height: 12),
+                       from: NSRect(x: 20, y: 63, width: 12, height: 12),
+                       operation: .copy, fraction: 1)
+        let ringRect = NSRect(x: x + 14.5, y: 12 + 57.5, width: 23, height: 23)
+        let track = NSBezierPath(ovalIn: ringRect)
+        track.lineWidth = 1.75
+        NSColor(calibratedWhite: 0.65, alpha: state.1 == nil ? 0.24 : 0.35).setStroke()
+        if state.1 == nil { track.setLineDash([2, 2], count: 2, phase: 0) }
+        track.stroke()
+        if let percent = state.1, percent > 0 {
+            let progress: NSBezierPath
+            if percent == 100 { progress = NSBezierPath(ovalIn: ringRect) }
+            else {
+                progress = NSBezierPath()
+                progress.appendArc(withCenter: NSPoint(x: ringRect.midX, y: ringRect.midY),
+                    radius: ringRect.width / 2, startAngle: 90,
+                    endAngle: 90 - CGFloat(percent) * 3.6, clockwise: true)
+            }
+            progress.lineWidth = 1.75
+            progress.lineCapStyle = .round
+            (percent < 15 ? NSColor(srgbRed: 0.94, green: 0.60, blue: 0.19, alpha: 1)
+                : NSColor(calibratedWhite: 0.72, alpha: 1)).setStroke()
+            progress.stroke()
+        }
         let view = QuotaMeterView(frame: NSRect(origin: .zero, size: QuotaMeterView.size))
         view.remainingPercent = state.1
         view.phase = phase
@@ -43,7 +69,7 @@ func render(phase: Double, destination: String) throws {
         view.draw(view.bounds)
         NSGraphicsContext.restoreGraphicsState()
     }
-    label(english ? "Simulated quota · captured native ring and avatar" : "模拟额度 · 原生圆环与头像取自用户截图",
+    label(english ? "Matched simulated quota · original avatar" : "槽体与圆环额度同步示意 · 保留原头像",
           at: NSPoint(x: 10, y: 4), size: 9, color: .gray)
     NSGraphicsContext.restoreGraphicsState()
     try bitmap.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: destination))
