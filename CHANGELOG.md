@@ -2,6 +2,12 @@
 
 **中文** | [English](CHANGELOG.en.md)
 
+## 3.1.1 · build 24
+
+- 主窗口可见时将额度查询间隔从 30 秒缩短为 5 秒，隐藏时保持 30 秒。
+- 切回窗口时立即检查刷新条件；计时器使用 common RunLoop 模式。
+- 失败后逐步退避，最大 60 秒，成功复位；请求保持互斥，不改变服务端额度计算。
+
 ## 3.1.0 · build 23
 
 - 使用官方 Codex app-server `account/rateLimits/read` 读取账户额度，每 30 秒查询，不再扫描 JSONL。

@@ -2,6 +2,12 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.1.1 · build 24
+
+- Reduce quota polling from 30 to 5 seconds while the main window is visible; retain 30 seconds while hidden.
+- Recheck immediately on reveal and use common RunLoop modes for the timer.
+- Back off failures up to 60 seconds and reset on success. Requests remain exclusive; server quota calculations are unchanged.
+
 ## 3.1.0 · build 23
 
 - Read account limits through the official Codex app-server `account/rateLimits/read` every 30 seconds instead of scanning JSONL files.

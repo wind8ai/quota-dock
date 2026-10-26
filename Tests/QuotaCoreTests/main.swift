@@ -1,5 +1,14 @@
 import Foundation
 
+let refresh = QuotaRefreshScheduleTests()
+let refreshTests: [(String, () -> Void)] = [
+    ("testVisibleQuotaRefreshDoesNotWaitThirtySeconds", refresh.testVisibleQuotaRefreshDoesNotWaitThirtySeconds),
+    ("testHiddenWindowSlowsPollingAndRevealChecksImmediately", refresh.testHiddenWindowSlowsPollingAndRevealChecksImmediately),
+    ("testInFlightAndWakeNeverOverlapRequests", refresh.testInFlightAndWakeNeverOverlapRequests),
+    ("testFailuresBackOffAndSuccessRestoresFastPolling", refresh.testFailuresBackOffAndSuccessRestoresFastPolling)
+]
+for (name, test) in refreshTests { test(); print("PASS \(name)") }
+
 let account = AccountQuotaTests()
 let accountTests: [(String, () -> Void)] = [
     ("testUsesCodexBucketAndWindowDurationRatherThanPrimaryPosition", account.testUsesCodexBucketAndWindowDurationRatherThanPrimaryPosition),
@@ -73,4 +82,4 @@ for (name, test) in visibilityTests {
     test()
     print("PASS \(name)")
 }
-print("All \(accountTests.count + clientTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + visibilityTests.count) tests passed.")
+print("All \(refreshTests.count + accountTests.count + clientTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + visibilityTests.count) tests passed.")

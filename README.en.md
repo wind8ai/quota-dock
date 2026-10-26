@@ -6,7 +6,7 @@ A macOS liquid gauge for your remaining Codex quota. It sits above your avatar, 
 
 ![QuotaDock in six simulated quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=5479cd90a0a4)
 
-Current version: **3.1.0 / build 23**. Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` leaves a thin red line; `--` means no reading or cached value is available. The preview uses simulated values and a schematic native ring.
+Current version: **3.1.1 / build 24**. Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` leaves a thin red line; `--` means no reading or cached value is available. The preview uses simulated values and a schematic native ring.
 
 ## Build and run
 
@@ -30,7 +30,7 @@ pkill -x QuotaDock
 
 ## How it works
 
-Every 30 seconds, query account limits through the local Codex CLI's official app-server protocol. Prefer the five-hour window, otherwise weekly. Use only the codex bucket, not Spark, credits or reserve.
+Query account limits through the local Codex CLI's official app-server protocol every 5 seconds while the main window is visible, otherwise every 30 seconds. Failures back off up to 60 seconds; requests never overlap. Prefer the five-hour window, otherwise weekly. Use only the codex bucket, not Spark, credits or reserve.
 
 Remaining quota is `100 - usedPercent`, rounded for display. New server values may increase or decrease. Failure, a reading older than one minute, or a reset shows `--`. No session-log scanning or persistent quota fallback. Each query has a timeout and cleans up its child process.
 
@@ -41,7 +41,7 @@ The liquid has two surface waves and rising bubbles. Level changes take about 0.
 ## Development
 
 ```sh
-./scripts/test.sh                     # 25 core/offline protocol regression cases
+./scripts/test.sh                     # 29 core/offline protocol regression cases
 bash scripts/test-app.sh              # Native panel lifecycle: 20 replacements preserve quota and animation
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose  # Read-only window diagnostics
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota  # Live account quota (requires login and network)

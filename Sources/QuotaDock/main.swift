@@ -67,7 +67,8 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     private let badgeView = QuotaMeterView(frame: NSRect(origin: .zero, size: badgeSize))
     private var positionTimer: Timer?
     private var quotaTimer: Timer?
-    private var quotaRefreshRunning = false
+    private var quotaRefreshSchedule = QuotaRefreshSchedule()
+    private var quotaTargetVisible = false
     private var lastVisibilityCheck: TimeInterval = 0
     private var visibilityRecovery = PanelVisibility()
     private let accountBarWindowTracker = AccountBarWindowTracker()
@@ -105,13 +106,14 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
             repeats: true
         )
         RunLoop.main.add(positionTimer!, forMode: .common)
-        quotaTimer = Timer.scheduledTimer(
-            timeInterval: 30,
+        quotaTimer = Timer(
+            timeInterval: 1,
             target: self,
             selector: #selector(refreshQuota),
             userInfo: nil,
             repeats: true
         )
+        RunLoop.main.add(quotaTimer!, forMode: .common)
     }
 
     private func createPanel() {
@@ -125,12 +127,17 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
             badgeView.setPercent(nil, animated: false)
         }
         guard let origin = accountBarWindowTracker.appKitOrigin() else {
+            quotaTargetVisible = false
             if panel.isVisible { panel.orderOut(nil) }
             _ = visibilityRecovery.action(at: now, targetVisible: false, appKitVisible: panel.isVisible, windowInfo: nil)
             badgeView.tick(at: now, visible: false,
                            reducedMotion: NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
             return
         }
+
+        let becameVisible = !quotaTargetVisible
+        quotaTargetVisible = true
+        if becameVisible { refreshQuota() }
 
         let moved = panel.frame.origin != origin
         panel.setFrameOrigin(origin)
@@ -164,6 +171,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func workspaceDidChange(_ notification: Notification) {
         lastVisibilityCheck = 0
         updatePosition()
+        refreshQuota()
     }
 
     @objc private func frontApplicationDidChange(_ notification: Notification) {
@@ -175,8 +183,8 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func refreshQuota() {
-        guard !quotaRefreshRunning else { return }
-        quotaRefreshRunning = true
+        guard quotaRefreshSchedule.beginIfDue(at: ProcessInfo.processInfo.systemUptime,
+            targetVisible: quotaTargetVisible) else { return }
         DispatchQueue.global(qos: .utility).async { [weak self] in
             let result = CodexQuotaSource.read()
             DispatchQueue.main.async {
@@ -188,7 +196,8 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 self.badgeView.setPercent(self.quotaSnapshot?.remainingPercent,
                                           animated: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
-                self.quotaRefreshRunning = false
+                self.quotaRefreshSchedule.completed(at: ProcessInfo.processInfo.systemUptime,
+                    succeeded: self.quotaSnapshot != nil)
             }
         }
     }
@@ -196,6 +205,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func quotaDidWake(_ notification: Notification) {
         quotaSnapshot = nil
         badgeView.setPercent(nil, animated: false)
+        quotaRefreshSchedule.woke()
         refreshQuota()
     }
 }

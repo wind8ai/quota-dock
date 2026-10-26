@@ -18,7 +18,7 @@ Earlier live checks covered a main window owned by ChatGPT, including visibility
 
 ## Source and freshness
 
-Use a local Codex CLI signed in with ChatGPT and the official stdio `account/rateLimits/read` method. Read at launch and every 30 seconds. Each read uses a short-lived child with a 15-second communication timeout; close stdin first and terminate only that child if necessary. No HTTP listener or model task is started.
+Use a local Codex CLI signed in with ChatGPT and the official stdio `account/rateLimits/read` method. Read at launch, then every 5 seconds while the main window is visible or every 30 seconds while hidden. Recheck on reveal without bypassing the minimum interval. Failures back off by 5, 10, 20, 40 and 60 seconds; success resets backoff and only one request may run at a time. Each read uses a short-lived child with a 15-second communication timeout; close stdin first and terminate only that child if necessary. No HTTP listener or model task is started.
 
 Prefer `rateLimitsByLimitId.codex`. Only when that map is absent, accept a legacy result explicitly identified as codex. Select 300 minutes (five hours) by duration, otherwise 10080 minutes (weekly). Do not infer a period from the primary slot or use Spark, credits or reserve. Other window lengths currently produce unknown.
 
@@ -40,4 +40,6 @@ Exit 0 reports source, period, remaining quota, observation time and reset time.
 
 ## Limitations
 
-A service snapshot is more direct than session logs but still polled about every 30 seconds, not equivalent to native push freshness. Compare the same account and period at similar observation times. The single gauge does not display both windows, credits or reserve. Positioning remains fixed account-bar geometry rather than avatar pixel detection; existing multi-display and long-running acceptance limits remain.
+Scheduling is checked once per second; five seconds is the minimum start-to-start interval. Local observation showed roughly 5–6 seconds between queries, plus API response time. System load, network delays and failure backoff can increase this; there is no fixed latency guarantee.
+
+A service snapshot is more direct than session logs but still polled about every 5 seconds while visible, plus API response time, not equivalent to native push freshness. Compare the same account and period at similar observation times. The single gauge does not display both windows, credits or reserve. Positioning remains fixed account-bar geometry rather than avatar pixel detection; existing multi-display and long-running acceptance limits remain.
