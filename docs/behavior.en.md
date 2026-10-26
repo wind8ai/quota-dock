@@ -14,7 +14,7 @@ While the main window is visible, actual panel visibility is checked once per se
 
 Run `build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose` for read-only diagnostics. Exit codes: 0 means the panel is at the expected position of the largest visible candidate; 1 means missing or misplaced; 2 means no visible main window (possibly another Space); 3 means the query failed. It launches no second gauge and prints no titles, chats or account data. With multiple main windows, the largest candidate may differ from the tracked window; compare the reported window IDs.
 
-Earlier live checks covered a main window owned by ChatGPT, including visibility while mini is enabled. File pickers, multiple displays, and fullscreen transitions in 3.0.5 still require manual acceptance. Regression tests cover a file picker preceding a larger main window.
+Earlier live checks covered a main window owned by ChatGPT, including visibility while mini is enabled. On 2026-10-20 the user confirmed fullscreen switching and file-picker behavior in 3.0.8. Regression tests cover a file picker preceding a larger main window. Multiple displays, display hot-plugging and extended sleep/wake behavior still lack comprehensive manual acceptance.
 
 ## Source and freshness
 

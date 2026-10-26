@@ -6,11 +6,13 @@
 
 ![QuotaDock 六种模拟额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=3f7738cc93c1)
 
-当前版本 **3.1.1 / build 24**。青蓝色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`0` 保留红色细线，`--` 表示没有数据或缓存。图中六种额度均为模拟值，下方原生圆环为布局示意。
+当前版本 **3.1.1 / build 24**。青蓝色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`0` 保留红色细线，`--` 表示当前没有有效的服务端快照。图中六种额度均为模拟值，下方原生圆环为布局示意。
+
+当前样式为 36 × 104 pt 液体槽、最多 15 pt 白色等宽重体与 4 pt 扩散黑色阴影，不使用数字底板或描边。按当前账号栏布局，与原生圆环留出约 20 pt 间隔。[查看静态效果图](docs/images/quota-dock-states.png)。PNG 与 GIF 均直接使用当前生产视图绘制，不包含真实账户额度。
 
 ## 构建与启动
 
-需要 macOS 11 或更新版本，以及 Apple Command Line Tools 或 Xcode、Swift 5.3 或更新版本。应用没有第三方依赖，目前已在 Apple Silicon 上构建和验证。
+需要 macOS 11 或更新版本，以及 Apple Command Line Tools 或 Xcode、Swift 5.3 或更新版本。Swift 代码无需第三方库；运行时需要已用 ChatGPT 登录的兼容 Codex CLI。目前已在 Apple Silicon 上构建和验证。
 
 ```sh
 xcode-select --install  # 已安装开发工具时跳过
@@ -53,6 +55,7 @@ build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota  # 读取真实账
 `build/`、`dist/`、`.build/` 和运行数据不进入 Git。默认签名为 ad-hoc，尚未完成 Apple 公证。
 
 - [定位、数据来源和已知限制](docs/behavior.md)
+- [原生用量圆环的实现参考与差异](docs/native-usage-reference.md)
 - [用量条消失问题复盘与验证边界](docs/visibility-review.md)
 - [构建、签名和发布](docs/releasing.md)
 - [更新记录](CHANGELOG.md)
