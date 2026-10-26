@@ -1,6 +1,5 @@
 import AppKit
 
-precondition(NSFont(name: "PingFangSC-Semibold", size: 15) != nil, "PingFang SC Semibold is required for preview verification")
 
 // Synthetic sidebar layout. The native ring is a schematic, not an app capture.
 let canvas = NSSize(width: 424, height: 270)

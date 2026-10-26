@@ -156,27 +156,26 @@ final class QuotaMeterView: NSView {
     private func drawPercent(in rect: NSRect, clip: NSBezierPath) {
         NSGraphicsContext.saveGraphicsState()
         clip.addClip()
+        let shadow = NSShadow()
+        shadow.shadowColor = NSColor.black.withAlphaComponent(0.95)
+        shadow.shadowBlurRadius = 4
+        shadow.shadowOffset = NSSize(width: 0, height: -0.5)
         let text = QuotaDisplayValue.text(for: remainingPercent)
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
-        let baseFont = NSFont(name: "PingFangSC-Semibold", size: 15)
-            ?? NSFont.systemFont(ofSize: 15, weight: .semibold)
+        let baseFont = NSFont.monospacedDigitSystemFont(ofSize: 15, weight: .heavy)
         let measuredWidth = (text as NSString).size(withAttributes: [.font: baseFont]).width
         let fontSize = min(15, 15 * (rect.width - 3) / max(1, measuredWidth))
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: NSFont(name: "PingFangSC-Semibold", size: fontSize)
-                ?? NSFont.systemFont(ofSize: fontSize, weight: .semibold),
+            .font: NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .heavy),
             .foregroundColor: NSColor.white,
-            .paragraphStyle: paragraph
+            .paragraphStyle: paragraph,
+            .shadow: shadow
         ]
         let string = NSAttributedString(string: text, attributes: attributes)
         let height = string.size().height
         let textRect = NSRect(x: rect.minX - 1, y: rect.minY + 16 - height / 2,
                               width: rect.width + 2, height: height)
-        var outline = attributes
-        outline[.strokeColor] = NSColor(calibratedWhite: 0.04, alpha: 1)
-        outline[.strokeWidth] = 4
-        NSAttributedString(string: text, attributes: outline).draw(in: textRect)
         string.draw(in: textRect)
         NSGraphicsContext.restoreGraphicsState()
     }
