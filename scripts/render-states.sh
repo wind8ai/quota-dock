@@ -23,11 +23,13 @@ xcrun swiftc -target "$(uname -m)-apple-macosx11.0" \
     "$project_dir/Sources/QuotaCore/QuotaDisplayValue.swift" \
     "$project_dir/Sources/QuotaDock/QuotaMeterView.swift" "$preview_dir/main.swift" \
     -o "$preview_dir/render-states"
-"$preview_dir/render-states" "$project_dir/docs/images/$asset_name-states.png" "$language_arg"
+"$preview_dir/render-states" "$project_dir/docs/images/$asset_name-states.png" \
+    "$project_dir/docs/images/sidebar-reference.png" "$language_arg"
 if $animate; then
     command -v ffmpeg >/dev/null || { echo 'Animated export requires ffmpeg.' >&2; exit 1; }
     mkdir -p "$preview_dir/frames"
-    "$preview_dir/render-states" "$preview_dir/frames" --frames "$language_arg"
+    "$preview_dir/render-states" "$preview_dir/frames" \
+        "$project_dir/docs/images/sidebar-reference.png" --frames "$language_arg"
     ffmpeg -hide_banner -loglevel error -y -framerate 20 \
         -i "$preview_dir/frames/frame-%03d.png" \
         -filter_complex '[0:v]split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=sierra2_4a' \

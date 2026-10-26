@@ -21,6 +21,6 @@
 - 不复制环形外观：QuotaDock 用液位和常显大数字，充足时用青蓝色，避免与原生中性线环混淆。
 - 3.0.9 槽体为 36 × 104 pt，再上移 18 pt；与截图中的原生圆环预留约 20 pt，仍是固定几何定位，不是实时读取原生控件边界。
 - 3.0.9 仍读取本地 JSONL；3.1.0 已改用官方 app-server 的 `account/rateLimits/read`，不再读取日志或单调缓存。单根优先显示 5 小时，否则每周；不声称等价于原生双周期／credits 数据或推送时效。
-- `scripts/state-preview.swift` 直接绘制生产视图；下方圆环与头像是标明的布局示意，不是原生截图。
+- `scripts/state-preview.swift` 直接绘制生产视图；下方圆环、中心图标与头像使用用户于 2026-10-26 提供并允许保留头像的截图（`docs/images/sidebar-reference.png`），作为固定参考，不与六列模拟额度联动。
 
 公开协议依据：[Codex App Server](https://learn.chatgpt.com/docs/app-server)。本机 CLI `0.164.0-alpha.11.1` 已实测该方法可用；使用现有登录，不读取或复制令牌。详细身份边界和失败处理见 `behavior.md`。

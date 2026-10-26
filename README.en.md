@@ -4,11 +4,11 @@
 
 A macOS liquid gauge for your remaining Codex quota. It sits above your avatar, follows the main window, and lets mouse clicks pass through.
 
-![QuotaDock in six simulated quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=5479cd90a0a4)
+![QuotaDock in six simulated quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=664b479a6275)
 
-Current version: **3.1.1 / build 24**. Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` leaves a thin red line; `--` means no valid server snapshot is currently available. The preview uses simulated values and a schematic native ring.
+Current version: **3.1.1 / build 24**. Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` leaves a thin red line; `--` means no valid server snapshot is currently available. The six quota values are simulated. The native ring, center icon and avatar come from the user's screenshot; the ring is a fixed reference, not linked to each column's value.
 
-The current design uses a 36 × 104 pt liquid gauge, white monospaced heavy numbers up to 15 pt, and a diffuse black shadow with a 4 pt blur radius—no number plate or outline. The current account-bar layout leaves roughly 20 pt between the gauge and the native ring. [View the static preview](docs/images/quota-dock-en-states.png). Both PNG and GIF render the current production view with synthetic, not real account, readings.
+The current design uses a 36 × 104 pt liquid gauge, white monospaced heavy numbers up to 15 pt, and a diffuse black shadow with a 4 pt blur radius—no number plate or outline. The current account-bar layout leaves roughly 20 pt between the gauge and the native ring. [View the static preview](docs/images/quota-dock-en-states.png). Both PNG and GIF render the upper gauge from the current production view with synthetic values; the lower sidebar and avatar use the user's authorized screenshot.
 
 ## Build and run
 

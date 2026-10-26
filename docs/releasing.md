@@ -38,7 +38,7 @@ SIGNING_IDENTITY='Developer ID Application: YOUR NAME (TEAMID)' ./scripts/packag
 
 公开源码位于 [wind8ai/quota-dock](https://github.com/wind8ai/quota-dock)。独立仓库标签使用 `v<version>`；维护 monorepo 的标签使用 `quota-dock/v<version>`。源码推送、版本标签和二进制发布是独立步骤，推送源码不表示对应二进制已发布。
 
-Git 保存源码、测试、脚本和文档展示素材。构建缓存、应用包、ZIP、真实会话、额度缓存和实际额度运行截图均被忽略。文档状态图使用合成额度，截图区域只包含液体槽和示例头像。
+Git 保存源码、测试、脚本和文档展示素材。构建缓存、应用包、ZIP、真实会话和额度缓存不提交。实际使用截图默认不提交；用户明确授权用于文档的参考截图除外。当前预览上方槽体使用合成额度，下方圆环与头像保留用户提供的参考截图，圆环作为固定参考，不随模拟数值变化。
 
 ## 技术选择
 

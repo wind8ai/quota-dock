@@ -1,7 +1,10 @@
 import AppKit
 
 
-// Synthetic sidebar layout. The native ring is a schematic, not an app capture.
+// Keep the user's real sidebar, native indicator and avatar. Only the large
+// QuotaDock gauge is replaced with simulated values from the production view.
+let reference = NSImage(contentsOfFile: CommandLine.arguments[2])!
+reference.size = NSSize(width: 51, height: 229)
 let canvas = NSSize(width: 424, height: 270)
 let english = CommandLine.arguments.contains("--english")
 func label(_ text: String, at point: NSPoint, size: CGFloat, color: NSColor) {
@@ -25,28 +28,22 @@ func render(phase: Double, destination: String) throws {
     for (index, state) in Array(zip(labels, values)).enumerated() {
         let x = CGFloat(6 + index * 70)
         label(state.0, at: NSPoint(x: x + 9, y: 245), size: 9, color: .lightGray)
-        let center = NSPoint(x: x + BadgeLayout.avatarCenterX, y: 85)
-        for angles in [(CGFloat(45), CGFloat(135)), (CGFloat(165), CGFloat(375))] {
-            let arc = NSBezierPath()
-            arc.appendArc(withCenter: center, radius: 11, startAngle: angles.0, endAngle: angles.1)
-            NSColor(calibratedWhite: 0.65, alpha: 1).setStroke()
-            arc.lineWidth = 1.75
-            arc.lineCapStyle = .round
-            arc.stroke()
-        }
-        let avatar = NSBezierPath(ovalIn: NSRect(x: center.x - 10, y: 26, width: 20, height: 20))
-        NSColor(calibratedWhite: 0.3, alpha: 1).setFill()
-        avatar.fill()
+        reference.draw(in: NSRect(x: x, y: 12, width: 51, height: 229))
+        // Replace only the captured gauge using adjacent clean sidebar pixels.
+        // The native ring (including its center icon) and avatar stay intact.
+        reference.draw(in: NSRect(x: x + 5, y: 12 + 104, width: 40, height: 110),
+                       from: NSRect(x: 44, y: 104, width: 5, height: 110),
+                       operation: .copy, fraction: 1)
         let view = QuotaMeterView(frame: NSRect(origin: .zero, size: QuotaMeterView.size))
         view.remainingPercent = state.1
         view.phase = phase
         NSGraphicsContext.saveGraphicsState()
-        (AffineTransform(translationByX: center.x - BadgeLayout.size.width / 2,
+        (AffineTransform(translationByX: x + BadgeLayout.avatarCenterX - BadgeLayout.size.width / 2,
                          byY: 12 + BadgeLayout.avatarTopFromBottom + BadgeLayout.avatarGap) as NSAffineTransform).concat()
         view.draw(view.bounds)
         NSGraphicsContext.restoreGraphicsState()
     }
-    label(english ? "Simulated quota · native ring schematic" : "模拟额度 · 下方圆环为原生样式示意",
+    label(english ? "Simulated quota · captured native ring and avatar" : "模拟额度 · 原生圆环与头像取自用户截图",
           at: NSPoint(x: 10, y: 4), size: 9, color: .gray)
     NSGraphicsContext.restoreGraphicsState()
     try bitmap.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: destination))

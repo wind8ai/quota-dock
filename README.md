@@ -4,11 +4,11 @@
 
 把 Codex 的剩余额度放在头像上方的 macOS 液体槽。液面表示剩余比例，底部显示整数；窗口移动时跟随，鼠标可以穿透。
 
-![QuotaDock 六种模拟额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=3f7738cc93c1)
+![QuotaDock 六种模拟额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=fafb2fe037f1)
 
-当前版本 **3.1.1 / build 24**。青蓝色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`0` 保留红色细线，`--` 表示当前没有有效的服务端快照。图中六种额度均为模拟值，下方原生圆环为布局示意。
+当前版本 **3.1.1 / build 24**。青蓝色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`0` 保留红色细线，`--` 表示当前没有有效的服务端快照。图中六种额度均为模拟值；下方圆环、中心图标和头像保留用户提供的真实截图，圆环只作固定参考，不随各列数值变化。
 
-当前样式为 36 × 104 pt 液体槽、最多 15 pt 白色等宽重体与 4 pt 扩散黑色阴影，不使用数字底板或描边。按当前账号栏布局，与原生圆环留出约 20 pt 间隔。[查看静态效果图](docs/images/quota-dock-states.png)。PNG 与 GIF 均直接使用当前生产视图绘制，不包含真实账户额度。
+当前样式为 36 × 104 pt 液体槽、最多 15 pt 白色等宽重体与 4 pt 扩散黑色阴影，不使用数字底板或描边。按当前账号栏布局，与原生圆环留出约 20 pt 间隔。[查看静态效果图](docs/images/quota-dock-states.png)。PNG 与 GIF 的上方槽体直接使用当前生产视图绘制，数值为合成数据；下方侧栏与头像使用用户授权保留的截图。
 
 ## 构建与启动
 

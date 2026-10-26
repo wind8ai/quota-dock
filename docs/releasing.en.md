@@ -38,7 +38,7 @@ After notarization is accepted, staple and verify the ticket on the `.app`, then
 
 Public source is at [wind8ai/quota-dock](https://github.com/wind8ai/quota-dock). Standalone repository tags use `v<version>`; the maintenance monorepo uses `quota-dock/v<version>`. Source pushes, version tags, and binary releases are separate steps. A source push does not mean a binary has been published.
 
-Git stores source, tests, scripts, and documentation assets. Build caches, app bundles, ZIP archives, real sessions, quota caches, and screenshots of actual usage are excluded. Documentation previews use synthetic quota values and show only the gauge and example avatar.
+Git stores source, tests, scripts, and documentation assets. Build caches, app bundles, ZIP archives, real sessions and quota caches are excluded. Actual usage screenshots are excluded unless the user explicitly authorizes a reference for documentation. Current previews use synthetic values for the upper gauge and retain the reference screenshot's native ring and avatar below; the ring is fixed rather than linked to the simulated values.
 
 ## Tooling
 
