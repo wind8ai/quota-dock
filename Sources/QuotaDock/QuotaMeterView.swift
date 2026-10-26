@@ -34,7 +34,7 @@ final class QuotaMeterView: NSView {
 
     private var liquidColor: NSColor {
         switch remainingPercent ?? 0 {
-        case 50...: return NSColor(srgbRed: 0.46, green: 0.80, blue: 0.30, alpha: 1)
+        case 50...: return NSColor(srgbRed: 0.18, green: 0.84, blue: 0.96, alpha: 1)
         case 20..<50: return NSColor(srgbRed: 0.94, green: 0.60, blue: 0.19, alpha: 1)
         default: return NSColor(srgbRed: 0.91, green: 0.26, blue: 0.28, alpha: 1)
         }
@@ -42,12 +42,12 @@ final class QuotaMeterView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        let shellRect = bounds.insetBy(dx: 0.75, dy: 0.75)
+        let shellRect = bounds.insetBy(dx: 1.5, dy: 1.5)
         let shell = capsule(shellRect)
-        NSGradient(starting: NSColor(calibratedWhite: 0.21, alpha: 0.82),
-                   ending: NSColor(calibratedWhite: 0.035, alpha: 0.9))?.draw(in: shell, angle: 0)
+        NSGradient(starting: NSColor(calibratedWhite: 0.20, alpha: 0.98),
+                   ending: NSColor(calibratedWhite: 0.025, alpha: 0.98))?.draw(in: shell, angle: 0)
 
-        let chamberRect = bounds.insetBy(dx: 3, dy: 3)
+        let chamberRect = bounds.insetBy(dx: 4, dy: 4)
         let chamber = capsule(chamberRect)
         NSColor(calibratedWhite: 0.025, alpha: 0.60).setFill()
         chamber.fill()
@@ -60,11 +60,11 @@ final class QuotaMeterView: NSView {
         let reflection = NSBezierPath()
         reflection.move(to: NSPoint(x: shellRect.minX + 3.5, y: shellRect.minY + 19))
         reflection.line(to: NSPoint(x: shellRect.minX + 3.5, y: shellRect.maxY - 19))
-        NSColor.white.withAlphaComponent(0.17).setStroke()
+        NSColor.white.withAlphaComponent(0.25).setStroke()
         reflection.lineWidth = 1
         reflection.stroke()
-        NSColor.white.withAlphaComponent(remainingPercent == nil ? 0.20 : 0.29).setStroke()
-        shell.lineWidth = 0.8
+        (remainingPercent == nil ? NSColor.gray : liquidColor).withAlphaComponent(0.78).setStroke()
+        shell.lineWidth = 1.25
         shell.stroke()
         drawPercent(in: chamberRect, clip: chamber)
     }
@@ -107,7 +107,7 @@ final class QuotaMeterView: NSView {
             if step == 0 { surface.move(to: point) } else { surface.line(to: point) }
         }
         fill.close()
-        NSGradient(starting: liquidColor.blended(withFraction: 0.48, of: .black)!,
+        NSGradient(starting: liquidColor.blended(withFraction: 0.35, of: .black)!,
                    ending: liquidColor)?.draw(in: fill, angle: 90)
         liquidColor.blended(withFraction: 0.36, of: .white)!.withAlphaComponent(0.9).setStroke()
         surface.lineWidth = 0.7
@@ -163,9 +163,9 @@ final class QuotaMeterView: NSView {
         let text = QuotaDisplayValue.text(for: remainingPercent)
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
-        let baseFont = NSFont.monospacedDigitSystemFont(ofSize: 13, weight: .heavy)
+        let baseFont = NSFont.monospacedDigitSystemFont(ofSize: 15, weight: .heavy)
         let measuredWidth = (text as NSString).size(withAttributes: [.font: baseFont]).width
-        let fontSize = min(13, 13 * (rect.width - 3) / max(1, measuredWidth))
+        let fontSize = min(15, 15 * (rect.width - 3) / max(1, measuredWidth))
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .heavy),
             .foregroundColor: NSColor.white.withAlphaComponent(0.96),

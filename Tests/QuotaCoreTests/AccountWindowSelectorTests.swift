@@ -26,7 +26,7 @@ final class AccountWindowSelectorTests {
         }
         precondition(selected.id == 22, "Floating mini window replaced the main-window anchor")
         let top = BadgeLayout.quartzTopLeft(in: selected.bounds)
-        precondition(top == CGPoint(x: 10, y: 797), "Quota bar did not retain the main-window layout")
+        precondition(top == CGPoint(x: 8, y: 771), "Quota bar did not retain the main-window layout")
     }
 
     func testOnlyMiniDoesNotCreateAnAvatarAnchor() {

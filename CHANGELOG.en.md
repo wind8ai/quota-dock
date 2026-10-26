@@ -2,6 +2,13 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.0.9 · build 22
+
+- Raise the gauge another 18 pt to separate it from the native usage ring; resize to 36 × 104 pt.
+- Use cyan for healthy quota, a stronger outline and numbers up to 15 pt without a background plate.
+- Refresh bilingual six-state previews with a schematic native ring.
+- Preserve quota reading, caching, window anchoring and panel recovery behavior.
+
 ## 3.0.8 · build 21
 
 - Recreate the native panel after three failed visibility checks instead of indefinitely reordering the same invisible window; apply a ten-second cooldown.

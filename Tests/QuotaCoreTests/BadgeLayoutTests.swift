@@ -8,9 +8,10 @@ final class BadgeLayoutTests {
             precondition(point.x + BadgeLayout.size.width / 2 == window.minX + 26)
             let bottom = point.y + BadgeLayout.size.height
             let avatarTop = window.maxY - 37
-            // Reserve a 44 pt update-button row above the avatar, plus 8 pt spacing.
-            precondition(avatarTop - bottom == 52)
-            precondition(BadgeLayout.size == CGSize(width: 32, height: 96))
+            // Reserve the native usage indicator as well as the update button.
+            precondition(avatarTop - bottom == 70)
+            precondition(window.maxY - bottom == 107)
+            precondition(BadgeLayout.size == CGSize(width: 36, height: 104))
         }
     }
 }

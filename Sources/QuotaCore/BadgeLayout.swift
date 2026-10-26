@@ -1,10 +1,10 @@
 import CoreGraphics
 
 enum BadgeLayout {
-    static let size = CGSize(width: 32, height: 96)
+    static let size = CGSize(width: 36, height: 104)
     static let avatarCenterX: CGFloat = 26
     static let avatarTopFromBottom: CGFloat = 37
-    static let avatarGap: CGFloat = 52 // 44 pt update-button row plus 8 pt spacing.
+    static let avatarGap: CGFloat = 70 // Native usage ring/update row, plus separation.
 
     /// Quartz coordinates have a downward-pointing y axis.
     static func quartzTopLeft(in window: CGRect) -> CGPoint {
