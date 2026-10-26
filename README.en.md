@@ -2,21 +2,21 @@
 
 [中文](README.md) | **English**
 
-A macOS liquid gauge for your remaining Codex quota. It sits above your avatar, follows the main window, and lets mouse clicks pass through.
+Show remaining Codex quota above your avatar on macOS. The liquid shows the remaining share, the number shows the percentage, and the gauge follows the window without blocking clicks.
 
-![QuotaDock in six simulated quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=c8d78ba49cfc)
+Current version: 3.1.1 / build 24.
 
-Current version: **3.1.1 / build 24**. Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` leaves a thin red line; `--` means no valid server snapshot is currently available. The six quota values are simulated. The lower ring follows the same simulated value as its column, with a dashed ring for unavailable data. The center icon and avatar are preserved from the user's screenshot.
+![QuotaDock in six quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=bc6f422990d3)
 
-The current design uses a 36 × 104 pt liquid gauge, white monospaced heavy numbers up to 15 pt, and a diffuse black shadow with a 4 pt blur radius—no number plate or outline. The current account-bar layout leaves roughly 20 pt between the gauge and the native ring. [View the static preview](docs/images/quota-dock-en-states.png). Both PNG and GIF render the upper gauge from the current production view with synthetic values; the lower sidebar and avatar use the user's authorized screenshot.
+Quota values are simulated. [View the static image](docs/images/quota-dock-en-states.png).
+
+Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` means exhausted; `--` means no valid reading is available.
 
 ## Build and run
 
-Requires macOS 11 or later and Apple Command Line Tools or Xcode with Swift 5.3 or later. The Swift code needs no third-party libraries; runtime requires a compatible Codex CLI signed in with ChatGPT. Built and tested on Apple Silicon.
+Requires macOS 11+, Swift 5.3+, and a Codex CLI signed in with ChatGPT. Tested on Apple Silicon. If you need developer tools, run `xcode-select --install` first.
 
 ```sh
-xcode-select --install  # Skip if developer tools are already installed
-
 git clone https://github.com/wind8ai/quota-dock.git
 cd quota-dock
 ./scripts/build.sh
@@ -24,38 +24,54 @@ cd quota-dock
 open build/QuotaDock.app
 ```
 
-The app does not appear in the Dock or register a login item. To quit, end `QuotaDock` in Activity Monitor or run:
+Signing defaults to ad-hoc; the app is not Apple-notarized. It has no Dock icon and adds no login item. Quit it through Activity Monitor or run `pkill -x QuotaDock`.
+
+## How quota is calculated
+
+The local Codex CLI queries the server through `account/rateLimits/read`. The gauge shows the five-hour allowance when available, otherwise weekly. It excludes Spark, credits and reserve.
+
+Queries run about every 5–6 seconds while the main window is visible, or every 30 seconds while hidden. API response time adds to that delay, so this does not match native push timing. Failed queries back off up to 60 seconds. Requests never overlap.
+
+Remaining quota is `100 - usedPercent`, rounded for display. A failed read, a reading older than one minute, or a reset changes the display to `--`. The app does not use old session logs or a persistent quota cache.
+
+The CLI and desktop app may use different accounts. Compare the same account and period when checking the native ring. QuotaDock does not read tokens directly or start model tasks.
+
+## Troubleshooting
+
+Check window placement:
 
 ```sh
-pkill -x QuotaDock
+build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose
 ```
 
-## How it works
+Check account quota with a working login and network connection:
 
-Query account limits through the local Codex CLI's official app-server protocol every 5 seconds while the main window is visible, otherwise every 30 seconds. Failures back off up to 60 seconds; requests never overlap. Prefer the five-hour window, otherwise weekly. Use only the codex bucket, not Spark, credits or reserve.
-
-Remaining quota is `100 - usedPercent`, rounded for display. New server values may increase or decrease. Failure, a reading older than one minute, or a reset shows `--`. No session-log scanning or persistent quota fallback. Each query has a timeout and cleans up its child process.
-
-Runtime requires a Codex CLI signed in with ChatGPT. Locate it through PATH, common installation paths, or the installed Codex/ChatGPT app. No direct token reading, model task or desktop app modification. The desktop-selected account may differ from the CLI account; compare the same identity and period.
-
-The liquid has two surface waves and rising bubbles. Level changes take about 0.6 seconds. Animation pauses when the target window is hidden and stays still when macOS Reduce Motion is enabled.
+```sh
+build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota
+```
 
 ## Development
 
+Run the core and native panel tests:
+
 ```sh
-./scripts/test.sh                     # 29 core/offline protocol regression cases
-bash scripts/test-app.sh              # Native panel lifecycle: 20 replacements preserve quota and animation
-build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose  # Read-only window diagnostics
-build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota  # Live account quota (requires login and network)
-./scripts/preview-animation.sh        # Synthetic readings; close the window to quit
-./scripts/render-states.sh --english --animate  # English preview; requires FFmpeg
-./scripts/package.sh                  # Test, build, sign, ZIP, and checksum
+./scripts/test.sh
+bash scripts/test-app.sh
 ```
 
-Build output, archives, caches, and runtime data are excluded from Git. Signing defaults to ad-hoc; no Apple-notarized binary is currently published.
+Generate both preview languages with FFmpeg installed:
 
-- [Window placement, quota rules, and limitations](docs/behavior.en.md)
-- [Native usage-ring implementation notes and differences (Chinese)](docs/native-usage-reference.md)
-- [Build, signing, and distribution](docs/releasing.en.md)
+```sh
+./scripts/render-states.sh --animate
+./scripts/render-states.sh --english --animate
+```
+
+`./scripts/preview-animation.sh` opens an interactive preview. `./scripts/package.sh` tests, builds, signs and packages the app. Build output and runtime data stay out of Git.
+
+## Further reading
+
+- [Window placement, quota source and limitations](docs/behavior.en.md)
+- [Native usage-ring implementation notes, in Chinese](docs/native-usage-reference.md)
+- [Signing and distribution](docs/releasing.en.md)
 - [Changelog](CHANGELOG.en.md)
-- [A prompt to recreate QuotaDock with Codex](docs/recreate-prompt.en.md)
+- [Recreation prompt](docs/recreate-prompt.en.md)

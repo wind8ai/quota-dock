@@ -71,8 +71,6 @@ func render(phase: Double, destination: String) throws {
         view.draw(view.bounds)
         NSGraphicsContext.restoreGraphicsState()
     }
-    label(english ? "Matched simulated quota · original avatar" : "槽体与圆环额度同步示意 · 保留原头像",
-          at: NSPoint(x: 10, y: 4), size: 9, color: .gray)
     NSGraphicsContext.restoreGraphicsState()
     try bitmap.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: destination))
 }
