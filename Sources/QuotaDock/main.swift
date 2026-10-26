@@ -186,18 +186,17 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         guard quotaRefreshSchedule.beginIfDue(at: ProcessInfo.processInfo.systemUptime,
             targetVisible: quotaTargetVisible) else { return }
         DispatchQueue.global(qos: .utility).async { [weak self] in
-            let result = CodexQuotaSource.read()
+            let observation = LocalQuotaSource.read()
             DispatchQueue.main.async {
                 guard let self = self else { return }
-                if case .success(let quota) = result, quota.isFresh(at: Date()) {
+                if let quota = observation, quota.isFresh(at: Date()) {
                     self.quotaSnapshot = quota
                 } else {
                     self.quotaSnapshot = nil
                 }
                 self.badgeView.setPercent(self.quotaSnapshot?.remainingPercent,
                                           animated: !NSWorkspace.shared.accessibilityDisplayShouldReduceMotion)
-                self.quotaRefreshSchedule.completed(at: ProcessInfo.processInfo.systemUptime,
-                    succeeded: self.quotaSnapshot != nil)
+                self.quotaRefreshSchedule.completed()
             }
         }
     }
@@ -211,7 +210,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 if CommandLine.arguments.contains("--diagnose-quota") {
-    exit(CodexQuotaSource.diagnose())
+    exit(LocalQuotaSource.diagnose())
 }
 if CommandLine.arguments.contains("--diagnose") {
     exit(WindowDiagnostics.run())

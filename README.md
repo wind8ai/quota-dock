@@ -4,7 +4,7 @@
 
 在 macOS 的 Codex 头像上方显示剩余额度。液面表示比例，数字显示百分比，窗口移动时跟随，不挡鼠标点击。
 
-当前版本 3.1.1 / build 24。
+当前版本 3.1.2 / build 25。
 
 ![QuotaDock 六种额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=f2ce9a4e8a5e)
 
@@ -14,7 +14,7 @@
 
 ## 构建与运行
 
-需要 macOS 11+、Swift 5.3+，以及已用 ChatGPT 登录的 Codex CLI。已在 Apple Silicon 上验证。没有开发工具时，先运行 `xcode-select --install`。
+需要 macOS 11+、Swift 5.3+，以及本机 Codex 生成的会话日志。已在 Apple Silicon 上验证。没有开发工具时，先运行 `xcode-select --install`。
 
 ```sh
 git clone https://github.com/wind8ai/quota-dock.git
@@ -28,13 +28,11 @@ open build/QuotaDock.app
 
 ## 额度怎么算
 
-通过本机 Codex CLI 的 `account/rateLimits/read` 查询服务端。优先显示 5 小时额度，没有时显示每周额度，不计入 Spark、credits 或 reserve。
+读取本机 `CODEX_HOME/sessions` 下的 Codex 会话日志，默认目录是 `~/.codex/sessions`。不启动 CLI，不请求额度接口，也不读取登录令牌。
 
-主窗口可见时约每 5–6 秒查询一次，隐藏时约每 30 秒查询。接口响应还需要时间，因此不会与原生推送同时变化。查询失败会逐步延长重试间隔，最长 60 秒，不并发请求。
+主窗口可见时约每 5 秒读取一次，隐藏时约每 30 秒读取。只使用 codex 额度回执，优先显示 5 小时窗口，否则显示每周窗口。数值按回执时间选取，允许上升或下降。
 
-剩余额度按 `100 - usedPercent` 计算，四舍五入显示。读取失败、数据超过一分钟或到达重置时间时显示 `--`，不使用旧会话日志或跨重启缓存。
-
-CLI 和桌面应用可能登录了不同账号。与原生圆环对照时，请确认账号和周期一致。工具不直接读取令牌，也不发起模型任务。
+显示的是最近一次记录，不是服务端实时查询。回执超过 15 分钟或已到重置时间时显示 `--`，不使用永久缓存。切换账号或同时使用多个账号时，日志可能混在一起，不能保证与桌面当前选中的账号相同。
 
 ## 排查问题
 
@@ -44,7 +42,7 @@ CLI 和桌面应用可能登录了不同账号。与原生圆环对照时，请�
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose
 ```
 
-检查账户额度，需要登录和网络：
+检查本地额度回执及其更新时间：
 
 ```sh
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota

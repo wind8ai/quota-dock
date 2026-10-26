@@ -4,7 +4,7 @@
 
 Show remaining Codex quota above your avatar on macOS. The liquid shows the remaining share, the number shows the percentage, and the gauge follows the window without blocking clicks.
 
-Current version: 3.1.1 / build 24.
+Current version: 3.1.2 / build 25.
 
 ![QuotaDock in six quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=bc6f422990d3)
 
@@ -14,7 +14,7 @@ Cyan means at least 50% remains, amber means 20% to below 50%, and red means bel
 
 ## Build and run
 
-Requires macOS 11+, Swift 5.3+, and a Codex CLI signed in with ChatGPT. Tested on Apple Silicon. If you need developer tools, run `xcode-select --install` first.
+Requires macOS 11+, Swift 5.3+, and session logs written by Codex on this Mac. Tested on Apple Silicon. If you need developer tools, run `xcode-select --install` first.
 
 ```sh
 git clone https://github.com/wind8ai/quota-dock.git
@@ -28,13 +28,11 @@ Signing defaults to ad-hoc; the app is not Apple-notarized. It has no Dock icon 
 
 ## How quota is calculated
 
-The local Codex CLI queries the server through `account/rateLimits/read`. The gauge shows the five-hour allowance when available, otherwise weekly. It excludes Spark, credits and reserve.
+Read Codex session logs under `CODEX_HOME/sessions`, defaulting to `~/.codex/sessions`. QuotaDock does not launch the CLI, query quota services or read login tokens.
 
-Queries run about every 5–6 seconds while the main window is visible, or every 30 seconds while hidden. API response time adds to that delay, so this does not match native push timing. Failed queries back off up to 60 seconds. Requests never overlap.
+Read about every 5 seconds while the main window is visible, otherwise every 30 seconds. Use codex quota receipts only, preferring five-hour limits and otherwise weekly. Select by observation time and allow both increases and decreases.
 
-Remaining quota is `100 - usedPercent`, rounded for display. A failed read, a reading older than one minute, or a reset changes the display to `--`. The app does not use old session logs or a persistent quota cache.
-
-The CLI and desktop app may use different accounts. Compare the same account and period when checking the native ring. QuotaDock does not read tokens directly or start model tasks.
+This is the latest recorded reading, not a live server query. Show `--` after 15 minutes without a fresh receipt or at reset. There is no persistent quota cache. Logs from multiple accounts may coexist, so they cannot reliably identify the account currently selected in the desktop app.
 
 ## Troubleshooting
 
@@ -44,7 +42,7 @@ Check window placement:
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose
 ```
 
-Check account quota with a working login and network connection:
+Check the local quota receipt and its age:
 
 ```sh
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota

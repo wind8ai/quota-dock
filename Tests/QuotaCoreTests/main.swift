@@ -1,11 +1,11 @@
 import Foundation
 
+
 let refresh = QuotaRefreshScheduleTests()
 let refreshTests: [(String, () -> Void)] = [
     ("testVisibleQuotaRefreshDoesNotWaitThirtySeconds", refresh.testVisibleQuotaRefreshDoesNotWaitThirtySeconds),
     ("testHiddenWindowSlowsPollingAndRevealChecksImmediately", refresh.testHiddenWindowSlowsPollingAndRevealChecksImmediately),
-    ("testInFlightAndWakeNeverOverlapRequests", refresh.testInFlightAndWakeNeverOverlapRequests),
-    ("testFailuresBackOffAndSuccessRestoresFastPolling", refresh.testFailuresBackOffAndSuccessRestoresFastPolling)
+    ("testInFlightAndWakeNeverOverlapRequests", refresh.testInFlightAndWakeNeverOverlapRequests)
 ]
 for (name, test) in refreshTests { test(); print("PASS \(name)") }
 
@@ -13,18 +13,23 @@ let account = AccountQuotaTests()
 let accountTests: [(String, () -> Void)] = [
     ("testUsesCodexBucketAndWindowDurationRatherThanPrimaryPosition", account.testUsesCodexBucketAndWindowDurationRatherThanPrimaryPosition),
     ("testWeeklyOnlyAndServerCorrectionsRemainAuthoritative", account.testWeeklyOnlyAndServerCorrectionsRemainAuthoritative),
-    ("testRejectsMissingCodexBucketEvenWhenLegacyExists", account.testRejectsMissingCodexBucketEvenWhenLegacyExists),
+    ("testRejectsNonCodexBucket", account.testRejectsNonCodexBucket),
     ("testRejectsInvalidExpiredAndUnsupportedWindows", account.testRejectsInvalidExpiredAndUnsupportedWindows),
-    ("testFreshnessExpiresAtResetOrAfterOneMinute", account.testFreshnessExpiresAtResetOrAfterOneMinute)
+    ("testFreshnessExpiresAtResetOrAfterFifteenMinutes", account.testFreshnessExpiresAtResetOrAfterFifteenMinutes)
 ]
 for (name, test) in accountTests { test(); print("PASS \(name)") }
-let client = CodexQuotaClientTests()
-let clientTests: [(String, () -> Void)] = [
-    ("testReadsOfficialProtocolAndIgnoresNotifications", client.testReadsOfficialProtocolAndIgnoresNotifications),
-    ("testRejectsAccountChange", client.testRejectsAccountChange),
-    ("testTimeoutAndProtocolErrorsAreBounded", client.testTimeoutAndProtocolErrorsAreBounded)
+let local = LocalQuotaReaderTests()
+let localTests: [(String, () throws -> Void)] = [
+    ("testReadsRecentLocalQuotaWithoutCLI", local.testReadsRecentLocalQuotaWithoutCLI),
+    ("testNewestObservationWinsOverFileModificationAndReset", local.testNewestObservationWinsOverFileModificationAndReset),
+    ("testNestedReceiptsIgnoreNewerSpark", local.testNestedReceiptsIgnoreNewerSpark),
+    ("testNewerCorrectionCanIncreaseRemaining", local.testNewerCorrectionCanIncreaseRemaining),
+    ("testExpiredNewestDoesNotResurrectOlderWindow", local.testExpiredNewestDoesNotResurrectOlderWindow),
+    ("testRejectsOldFutureAndMissingTimestamp", local.testRejectsOldFutureAndMissingTimestamp),
+    ("testTruncatedUTF8AndPartialJSONDoNotHideValidTail", local.testTruncatedUTF8AndPartialJSONDoNotHideValidTail),
+    ("testOnlyTwelveRecentFilesAreRead", local.testOnlyTwelveRecentFilesAreRead)
 ]
-for (name, test) in clientTests { test(); print("PASS \(name)") }
+for (name, test) in localTests { try test(); print("PASS \(name)") }
 
 let layout = BadgeLayoutTests()
 let layoutTests: [(String, () throws -> Void)] = [
@@ -82,4 +87,4 @@ for (name, test) in visibilityTests {
     test()
     print("PASS \(name)")
 }
-print("All \(refreshTests.count + accountTests.count + clientTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + visibilityTests.count) tests passed.")
+print("All \(refreshTests.count + accountTests.count + localTests.count + layoutTests.count + animationTests.count + windowTests.count + displayTests.count + visibilityTests.count) tests passed.")

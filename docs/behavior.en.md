@@ -18,28 +18,28 @@ Earlier live checks covered a main window owned by ChatGPT, including visibility
 
 ## Source and freshness
 
-Use a local Codex CLI signed in with ChatGPT and the official stdio `account/rateLimits/read` method. Read at launch, then every 5 seconds while the main window is visible or every 30 seconds while hidden. Recheck on reveal without bypassing the minimum interval. Failures back off by 5, 10, 20, 40 and 60 seconds; success resets backoff and only one request may run at a time. Each read uses a short-lived child with a 15-second communication timeout; close stdin first and terminate only that child if necessary. No HTTP listener or model task is started.
+Version 3.1.2 restores local log reading and removes the CLI subprocess and JSON-RPC quota path. Read `~/.codex/sessions`, or sessions under CODEX_HOME when set. Do not change proxy settings, login state or the Codex app.
 
-Prefer `rateLimitsByLimitId.codex`. Only when that map is absent, accept a legacy result explicitly identified as codex. Select 300 minutes (five hours) by duration, otherwise 10080 minutes (weekly). Do not infer a period from the primary slot or use Spark, credits or reserve. Other window lengths currently produce unknown.
+Inspect the 12 most recently modified JSONL files, reading up to the final 2 MB of each. Accept only event_msg / token_count records with limit_id=codex, supporting payload.rate_limits and payload.info.rate_limits. Select window_minutes=300, otherwise 10080. Do not assume primary means weekly or include Spark.
 
-Remaining quota is `100 - usedPercent`, preserving source fractions and displaying rounded integers. New server values may increase or decrease. Failure shows `--`; an in-memory reading expires after 60 seconds or at resetsAt, whichever comes first. Never infer a refill to 100%. Wake clears the old display and refreshes.
+Select the newest ISO 8601 observation timestamp, with or without fractional seconds. Never use file modification time as observation time. Skip truncated or incomplete JSON lines. If the newest record has expired, do not resurrect an older reset window.
 
-Version 3.1.0 removes the JSONL reader, QuotaStabilizer and persistent quota cache. Any old `quota-history-v2` preference is ignored, not used as fallback.
+Remaining quota is 100 - used_percent, preserving fractions and rounding for display. Allow corrected values to rise. A receipt expires after 15 minutes or at resets_at, whichever comes first. Missing valid data shows unknown, never an assumed refill to 100%. Ignore the old quota-history-v2 preference.
 
-## Authentication and diagnostics
+Read at a minimum interval of 5 seconds while visible and 30 seconds while hidden. Check scheduling every second; reads never overlap. Missing local data no longer triggers network-style backoff. Wake clears the old display and reads again.
 
-Look for codex on PATH and common CLI installation paths, then inside the installed Codex/ChatGPT app. Missing CLI, absent ChatGPT login, API-key-only auth, incompatible protocol or unsupported quota windows produce unknown. The tool never logs in, switches accounts or reads token files itself.
-
-Before and after the quota read, compare the email and plan type returned by account/read. Keep these only in memory, never in diagnostics or cache. This API does not expose the full desktop-selected account/workspace identity, so the comparison cannot prove that desktop and CLI accounts match.
+## Diagnostics
 
 ```sh
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota
 ```
 
-Exit 0 reports source, period, remaining quota, observation time and reset time. Exit 1 reports a bounded error category, without email, tokens or credit balances.
+Exit 0 reports local-session-log, period, remaining quota, observation time and age. Exit 1 means no recent valid receipt. No conversation text, filenames, email or tokens are printed.
 
 ## Limitations
 
-Scheduling is checked once per second; five seconds is the minimum start-to-start interval. Local observation showed roughly 5–6 seconds between queries, plus API response time. System load, network delays and failure backoff can increase this; there is no fixed latency guarantee.
+Logs update only when Codex writes quota receipts. Idle sessions, usage on other devices or missing receipts can differ from the native live ring. Fifteen minutes is the maximum display age, not a freshness guarantee.
 
-A service snapshot is more direct than session logs but still polled about every 5 seconds while visible, plus API response time, not equivalent to native push freshness. Compare the same account and period at similar observation times. The single gauge does not display both windows, credits or reserve. Positioning remains fixed account-bar geometry rather than avatar pixel detection; existing multi-display and long-running acceptance limits remain.
+Logs from different accounts can coexist, so the current desktop account cannot be reliably identified. Searching only 12 file tails can miss other receipts. A permanent cache would not resolve these limits.
+
+The CLI workspace-routing timeout and request failure remain unresolved. This release returns to local mode as requested. Existing window-placement, multi-display and sleep/wake acceptance limits remain unchanged.

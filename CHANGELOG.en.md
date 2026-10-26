@@ -2,6 +2,13 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.1.2 · build 25
+
+- Restore local JSONL receipts after persistent CLI routing and request failures, as requested. No CLI launch or quota API call.
+- Select the latest codex observation by timestamp; support fractional timestamps, nested fields and truncated tails without decrease-only filtering.
+- Show unknown after 15 minutes or at reset. Do not use a persistent quota cache.
+- Retain visible 5-second and hidden 30-second reads; remove network backoff and report local source and receipt age in diagnostics.
+
 ## 3.1.1 · build 24
 
 - Reduce quota polling from 30 to 5 seconds while the main window is visible; retain 30 seconds while hidden.
