@@ -4,13 +4,13 @@
 
 Show remaining Codex quota above your avatar on macOS. The liquid shows the remaining share, the number shows the percentage, and the gauge follows the window without blocking clicks.
 
-Current version: 3.1.4 / build 27.
+Current version: 3.1.5 / build 28.
 
 ![QuotaDock in six quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=bc6f422990d3)
 
 Quota values are simulated. [View the static image](docs/images/quota-dock-en-states.png).
 
-Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `0` means exhausted; `--` means no valid reading is available.
+Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `≤1` means local usage has reached its last percentage point without an explicit plan-limit signal. Extra credits may already be in use; it does not promise more included usage. `0` means a receipt explicitly reports the plan limit; `--` means no valid reading is available.
 
 ## Build and run
 

@@ -6,6 +6,8 @@ struct AccountQuota: Codable, Equatable {
     let windowDurationMins: Int
     let resetsAt: TimeInterval
     let observedAt: Date
+    // Missing in older receipts and caches; a rounded percentage is not proof.
+    var exhaustionConfirmed: Bool? = nil
 
     func isFresh(at now: Date) -> Bool {
         let age = now.timeIntervalSince(observedAt)
@@ -28,7 +30,8 @@ struct AccountQuota: Codable, Equatable {
             guard let used = number(window["used_percent"]), used >= 0,
                   let reset = number(window["resets_at"]), reset > observedAt.timeIntervalSince1970 else { return nil }
             return AccountQuota(remainingPercent: max(0, min(100, 100 - used)),
-                windowDurationMins: duration, resetsAt: reset, observedAt: observedAt)
+                windowDurationMins: duration, resetsAt: reset, observedAt: observedAt,
+                exhaustionConfirmed: limits["rate_limit_reached_type"] as? String == "rate_limit_reached" ? true : nil)
         }
         return nil
     }

@@ -203,6 +203,7 @@ private final class AppDelegate: NSObject, NSApplicationDelegate {
         let now = Date()
         let quota = quotaCache.current(at: now)
         let stale = quota.map { !$0.isFresh(at: now) } ?? false
+        badgeView.exhaustionConfirmed = quota?.exhaustionConfirmed == true
         if badgeView.remainingPercent != quota?.remainingPercent {
             badgeView.setPercent(quota?.remainingPercent, animated: animated && !stale)
         }

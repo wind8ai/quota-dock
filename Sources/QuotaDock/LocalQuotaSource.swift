@@ -20,6 +20,9 @@ enum LocalQuotaSource {
         if let quota = quota {
             report["status"] = quota.isFresh(at: now) ? "recent-local-observation" : "cached-local-observation"
             report["remainingPercent"] = quota.remainingPercent
+            report["exhaustionConfirmed"] = quota.exhaustionConfirmed == true
+            report["displayText"] = QuotaDisplayValue.text(for: quota.remainingPercent,
+                exhaustionConfirmed: quota.exhaustionConfirmed == true)
             report["period"] = quota.windowDurationMins == 300 ? "5-hour" : "weekly"
             report["windowDurationMins"] = quota.windowDurationMins
             report["observedAt"] = ISO8601DateFormatter().string(from: quota.observedAt)

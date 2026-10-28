@@ -20,6 +20,18 @@ final class AccountQuotaTests {
         precondition(AccountQuota.parseLimits(result, observedAt: Date(timeIntervalSince1970: 1000)) == nil)
     }
 
+    func testOnlyExplicitPlanLimitConfirmsExhaustion() {
+        let now = Date(timeIntervalSince1970: 1000)
+        var limits = legacy(100)
+        precondition(AccountQuota.parseLimits(limits, observedAt: now)?.exhaustionConfirmed != true)
+        limits["rate_limit_reached_type"] = NSNull()
+        precondition(AccountQuota.parseLimits(limits, observedAt: now)?.exhaustionConfirmed != true)
+        limits["rate_limit_reached_type"] = "workspace_member_usage_limit_reached"
+        precondition(AccountQuota.parseLimits(limits, observedAt: now)?.exhaustionConfirmed != true)
+        limits["rate_limit_reached_type"] = "rate_limit_reached"
+        precondition(AccountQuota.parseLimits(limits, observedAt: now)?.exhaustionConfirmed == true)
+    }
+
     func testRejectsInvalidExpiredAndUnsupportedWindows() {
         let now = Date(timeIntervalSince1970: 1000)
         for used: Any in [true, "29", Double.nan, Double.infinity, -1] {

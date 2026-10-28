@@ -35,6 +35,26 @@ final class QuotaCacheTests {
         }
     }
 
+    func testEndpointConfirmationSurvivesRestartAndLegacyCacheStaysUncertain() {
+        withDefaults { defaults in
+            let cache = QuotaCache(defaults: defaults, namespace: "endpoint")
+            let now = Date(timeIntervalSince1970: 1000)
+            let legacy = reading(0)
+            let encoded = try! JSONEncoder().encode(legacy)
+            var object = try! JSONSerialization.jsonObject(with: encoded) as! [String: Any]
+            object.removeValue(forKey: "exhaustionConfirmed")
+            let decoded = try! JSONDecoder().decode(AccountQuota.self,
+                from: JSONSerialization.data(withJSONObject: object))
+            precondition(decoded.exhaustionConfirmed == nil)
+            cache.update(decoded, at: now)
+            var confirmed = decoded
+            confirmed.exhaustionConfirmed = true
+            cache.update(confirmed, at: now)
+            let reopened = QuotaCache(defaults: defaults, namespace: "endpoint")
+            precondition(reopened.current(at: now)?.exhaustionConfirmed == true)
+        }
+    }
+
     func testResetDoesNotInventARefill() {
         withDefaults { defaults in
             let cache = QuotaCache(defaults: defaults, namespace: "test")

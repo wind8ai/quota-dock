@@ -65,6 +65,7 @@ func render(phase: Double, destination: String) throws {
         }
         let view = QuotaMeterView(frame: NSRect(origin: .zero, size: QuotaMeterView.size))
         view.remainingPercent = state.1
+        view.exhaustionConfirmed = state.1 == 0 // This preview explicitly simulates an exhausted plan.
         view.isStale = cachedPreview && state.1 != nil
         view.phase = cachedPreview ? 0 : phase
         NSGraphicsContext.saveGraphicsState()

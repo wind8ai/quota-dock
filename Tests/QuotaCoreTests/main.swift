@@ -2,6 +2,7 @@ import Foundation
 
 let cache = QuotaCacheTests()
 let cacheTests: [(String, () -> Void)] = [
+    ("testEndpointConfirmationSurvivesRestartAndLegacyCacheStaysUncertain", cache.testEndpointConfirmationSurvivesRestartAndLegacyCacheStaysUncertain),
     ("testIdleKeepsLastReadingWithStaleStatus", cache.testIdleKeepsLastReadingWithStaleStatus),
     ("testPersistsAcrossRestartAndSeparatesDirectories", cache.testPersistsAcrossRestartAndSeparatesDirectories),
     ("testMissingAndOlderObservationsDoNotRefreshCacheAge", cache.testMissingAndOlderObservationsDoNotRefreshCacheAge),
@@ -22,6 +23,7 @@ for (name, test) in refreshTests { test(); print("PASS \(name)") }
 
 let account = AccountQuotaTests()
 let accountTests: [(String, () -> Void)] = [
+    ("testOnlyExplicitPlanLimitConfirmsExhaustion", account.testOnlyExplicitPlanLimitConfirmsExhaustion),
     ("testUsesCodexBucketAndWindowDurationRatherThanPrimaryPosition", account.testUsesCodexBucketAndWindowDurationRatherThanPrimaryPosition),
     ("testWeeklyOnlyAndServerCorrectionsRemainAuthoritative", account.testWeeklyOnlyAndServerCorrectionsRemainAuthoritative),
     ("testRejectsNonCodexBucket", account.testRejectsNonCodexBucket),
@@ -31,6 +33,7 @@ let accountTests: [(String, () -> Void)] = [
 for (name, test) in accountTests { test(); print("PASS \(name)") }
 let local = LocalQuotaReaderTests()
 let localTests: [(String, () throws -> Void)] = [
+    ("testLocalEndpointStaysUncertainUntilExplicitExhaustion", local.testLocalEndpointStaysUncertainUntilExplicitExhaustion),
     ("testReadsRecentLocalQuotaWithoutCLI", local.testReadsRecentLocalQuotaWithoutCLI),
     ("testNewestObservationWinsOverFileModificationAndReset", local.testNewestObservationWinsOverFileModificationAndReset),
     ("testNestedReceiptsIgnoreNewerSpark", local.testNestedReceiptsIgnoreNewerSpark),
@@ -79,6 +82,8 @@ for (name, test) in windowTests {
 
 let display = QuotaDisplayValueTests()
 let displayTests: [(String, () -> Void)] = [
+    ("testZeroRequiresConfirmedExhaustion", display.testZeroRequiresConfirmedExhaustion),
+    ("testLastPercentDoesNotClaimExhaustion", display.testLastPercentDoesNotClaimExhaustion),
     ("testIntegerWithoutPercentSign", display.testIntegerWithoutPercentSign),
     ("testUnknownAndInvalidValuesHaveNoPercentSign", display.testUnknownAndInvalidValuesHaveNoPercentSign)
 ]

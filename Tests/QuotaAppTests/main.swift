@@ -20,6 +20,10 @@ for _ in 0..<20 {
     precondition(panel.collectionBehavior.contains(.fullScreenAuxiliary))
 }
 panel.close()
+view.remainingPercent = 0
+view.needsDisplay = false
+view.exhaustionConfirmed = true
+precondition(view.needsDisplay, "An exhaustion confirmation must redraw even when the percentage stays zero")
 view.tick(at: 0, visible: true, reducedMotion: false)
 view.tick(at: 1, visible: true, reducedMotion: false)
 precondition(view.phase == 0, "Cached readings must not keep animating")

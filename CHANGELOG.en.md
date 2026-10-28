@@ -2,6 +2,12 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.1.5 · build 28
+
+- Show `≤1` when a local receipt reports 100% used without an explicit plan-limit signal, rather than claiming exhaustion or exactly 1% remaining. Extra credits may already be charged.
+- Keep positive remainders at a minimum display of `1` instead of rounding values below 0.5% to `0`. Show zero only with `rate_limit_reached_type=rate_limit_reached`.
+- Persist exhaustion evidence while supporting older caches. Add display text and confirmation status to diagnostics, with endpoint, cache and native redraw regression tests.
+
 ## 3.1.4 · build 27
 
 - Move the gauge up another 32 pt to clear the update button and its tooltip above the avatar, keeping the remaining-quota number visible.

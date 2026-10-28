@@ -24,7 +24,9 @@ Inspect the 12 most recently modified JSONL files, reading up to the final 2 MB 
 
 Select the newest ISO 8601 observation timestamp, with or without fractional seconds. Never use file modification time as observation time. Skip truncated or incomplete JSON lines. If the newest record has expired, do not resurrect an older reset window.
 
-Remaining quota is 100 - used_percent, preserving fractions and rounding for display. Allow corrected values to rise. After 15 minutes, retain the number, show a small clock and pause the bubbles. Do not retain a reading past resets_at or infer a refill to 100%. Show unknown when no reading exists for the current period.
+Remaining quota is 100 - used_percent, preserving fractions and rounding for display with a minimum of `1` for positive values. A local 100%-used receipt does not confirm plan exhaustion: show zero only when `rate_limit_reached_type=rate_limit_reached`; otherwise show `≤1`. A missing or null field does not establish that usage is allowed. A positive credit balance does not establish remaining plan quota, and workspace spending limits do not confirm plan exhaustion. Older caches without the signal remain uncertain.
+
+Allow corrected values to rise. After 15 minutes, retain the number, show a small clock and pause the bubbles. Do not retain a reading past resets_at or infer a refill to 100%. Show unknown when no reading exists for the current period.
 
 Read at a minimum interval of 5 seconds while visible and 30 seconds while hidden. Check scheduling every second; reads never overlap. Missing local data no longer triggers network-style backoff. Wake clears the old display and reads again.
 
@@ -36,11 +38,13 @@ Persist the last receipt in app preferences, scoped by session directory, and re
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota
 ```
 
-Exit 0 reports local-session-log, period, last quota, observation time and age, with recent-local-observation or cached-local-observation status. Exit 1 means no usable reading in the current period. No conversation text, filenames, email or tokens are printed.
+Exit 0 reports local-session-log, period, last quota, display text, exhaustion confirmation, observation time and age, with recent-local-observation or cached-local-observation status. Exit 1 means no usable reading in the current period. No conversation text, filenames, email or tokens are printed.
 
 ## Limitations
 
 Logs update only when Codex writes quota receipts. Idle sessions, usage on other devices or missing receipts can differ from the native live ring. The clock marks a reading older than 15 minutes, not a current server value.
+
+The native UI sets a minimum of 1 when `allowed=true`, even at 100% used. This does not establish remaining included quota. Local logs lack that field, and extra credits can already be charged while the exhaustion reason remains null. `≤1` indicates uncertainty at the end of the plan percentage; it does not promise more included usage or show the extra-credit balance or spending rate.
 
 Logs from different accounts can coexist, so the current desktop account cannot be reliably identified. Searching only 12 file tails can miss other receipts. Directory-scoped caching does not identify accounts that share one directory.
 

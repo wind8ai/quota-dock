@@ -9,11 +9,13 @@ final class LocalQuotaReaderTests {
     }
 
     private func event(_ used: Double = 25, at time: Double = 1000.125,
-                       reset: Double = 5000, bucket: String = "codex", nested: Bool = false) throws -> Data {
+                       reset: Double = 5000, bucket: String = "codex", nested: Bool = false,
+                       reached: String? = nil) throws -> Data {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let limits: [String: Any] = ["limit_id": bucket, "primary": [
+        var limits: [String: Any] = ["limit_id": bucket, "primary": [
             "used_percent": used, "window_minutes": 10080, "resets_at": reset]]
+        if let reached = reached { limits["rate_limit_reached_type"] = reached }
         var payload: [String: Any] = ["type": "token_count"]
         if nested { payload["info"] = ["rate_limits": limits] } else { payload["rate_limits"] = limits }
         var data = try JSONSerialization.data(withJSONObject: [
@@ -29,6 +31,22 @@ final class LocalQuotaReaderTests {
             let value = LocalQuotaReader.latest(in: root, now: Date(timeIntervalSince1970: 1001))
             precondition(value?.remainingPercent == 75)
             precondition(value?.observedAt == Date(timeIntervalSince1970: 1000.125))
+        }
+    }
+
+    func testLocalEndpointStaysUncertainUntilExplicitExhaustion() throws {
+        try directory { root in
+            let file = root.appendingPathComponent("session.jsonl")
+            var data = try event(100, at: 1000)
+            try data.write(to: file)
+            let uncertain = LocalQuotaReader.latest(in: root, now: Date(timeIntervalSince1970: 1001))!
+            precondition(QuotaDisplayValue.text(for: uncertain.remainingPercent,
+                exhaustionConfirmed: uncertain.exhaustionConfirmed == true) == "≤1")
+            data.append(try event(100, at: 1001, reached: "rate_limit_reached"))
+            try data.write(to: file)
+            let exhausted = LocalQuotaReader.latest(in: root, now: Date(timeIntervalSince1970: 1002))!
+            precondition(QuotaDisplayValue.text(for: exhausted.remainingPercent,
+                exhaustionConfirmed: exhausted.exhaustionConfirmed == true) == "0")
         }
     }
 

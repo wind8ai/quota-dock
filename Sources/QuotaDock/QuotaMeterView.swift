@@ -8,6 +8,9 @@ final class QuotaMeterView: NSView {
     var isStale = false {
         didSet { if oldValue != isStale { needsDisplay = true } }
     }
+    var exhaustionConfirmed = false {
+        didSet { if oldValue != exhaustionConfirmed { needsDisplay = true } }
+    }
 
     var remainingPercent: Double? {
         get { animation.targetPercent }
@@ -175,7 +178,7 @@ final class QuotaMeterView: NSView {
         shadow.shadowColor = NSColor.black.withAlphaComponent(0.95)
         shadow.shadowBlurRadius = 4
         shadow.shadowOffset = NSSize(width: 0, height: -0.5)
-        let text = QuotaDisplayValue.text(for: remainingPercent)
+        let text = QuotaDisplayValue.text(for: remainingPercent, exhaustionConfirmed: exhaustionConfirmed)
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
         let baseFont = NSFont.monospacedDigitSystemFont(ofSize: 15, weight: .heavy)
