@@ -11,6 +11,9 @@ final class QuotaMeterView: NSView {
     var exhaustionConfirmed = false {
         didSet { if oldValue != exhaustionConfirmed { needsDisplay = true } }
     }
+    var isSpendingCredits = false {
+        didSet { if oldValue != isSpendingCredits { needsDisplay = true } }
+    }
 
     var remainingPercent: Double? {
         get { animation.targetPercent }
@@ -31,7 +34,8 @@ final class QuotaMeterView: NSView {
     func tick(at now: TimeInterval, visible: Bool, reducedMotion: Bool) {
         let delta = lastTick.map { min(0.1, max(0, now - $0)) } ?? 0
         lastTick = now
-        if animation.advance(by: delta, visible: visible, reducedMotion: reducedMotion || isStale) {
+        if animation.advance(by: delta, visible: visible,
+                             reducedMotion: reducedMotion || isStale || isSpendingCredits) {
             needsDisplay = true
         }
     }
@@ -39,6 +43,7 @@ final class QuotaMeterView: NSView {
     override var isOpaque: Bool { false }
 
     private var liquidColor: NSColor {
+        if isSpendingCredits { return NSColor(srgbRed: 1, green: 0.25, blue: 0.31, alpha: 1) }
         switch remainingPercent ?? 0 {
         case 50...: return NSColor(srgbRed: 0.18, green: 0.84, blue: 0.96, alpha: 1)
         case 20..<50: return NSColor(srgbRed: 0.94, green: 0.60, blue: 0.19, alpha: 1)
@@ -74,6 +79,57 @@ final class QuotaMeterView: NSView {
         shell.stroke()
         drawPercent(in: chamberRect, clip: chamber)
         if isStale { drawStaleMarker() }
+        if isSpendingCredits { drawCreditSpendWarning(in: shellRect) }
+    }
+
+    private func drawCreditSpendWarning(in rect: NSRect) {
+        let y = rect.midY + 6
+        let points = [NSPoint(x: rect.minX - 2, y: y + 3),
+                      NSPoint(x: rect.minX + 8, y: y - 4),
+                      NSPoint(x: rect.midX - 1, y: y + 3),
+                      NSPoint(x: rect.midX + 6, y: y - 3),
+                      NSPoint(x: rect.maxX + 2, y: y + 4)]
+        // Clear a jagged gap through both walls so the glass is visibly broken.
+        let gap = NSBezierPath()
+        gap.move(to: points[0])
+        for point in points.dropFirst() { gap.line(to: point) }
+        for point in points.reversed() { gap.line(to: NSPoint(x: point.x, y: point.y - 5)) }
+        gap.close()
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current?.compositingOperation = .clear
+        gap.fill()
+        NSGraphicsContext.restoreGraphicsState()
+
+        NSGraphicsContext.saveGraphicsState()
+        let glow = NSShadow()
+        glow.shadowColor = liquidColor.withAlphaComponent(0.85)
+        glow.shadowBlurRadius = 3
+        glow.shadowOffset = .zero
+        glow.set()
+        let edges = NSBezierPath()
+        for offset in [CGFloat(0), CGFloat(-5)] {
+            edges.move(to: NSPoint(x: points[0].x, y: points[0].y + offset))
+            for point in points.dropFirst() {
+                edges.line(to: NSPoint(x: point.x, y: point.y + offset))
+            }
+        }
+        edges.move(to: NSPoint(x: rect.minX + 8, y: y - 4))
+        edges.line(to: NSPoint(x: rect.minX + 5, y: y + 8))
+        edges.line(to: NSPoint(x: rect.minX + 9, y: y + 15))
+        edges.move(to: NSPoint(x: rect.midX + 6, y: y - 8))
+        edges.line(to: NSPoint(x: rect.midX + 3, y: y - 17))
+        liquidColor.setStroke()
+        edges.lineWidth = 1.5
+        edges.stroke()
+        NSGraphicsContext.restoreGraphicsState()
+
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        ("已扣费" as NSString).draw(in: NSRect(x: rect.minX, y: rect.maxY - 26,
+                                            width: rect.width, height: 12),
+            withAttributes: [.font: NSFont.systemFont(ofSize: 8, weight: .bold),
+                             .foregroundColor: NSColor(srgbRed: 1, green: 0.55, blue: 0.59, alpha: 1),
+                             .paragraphStyle: paragraph])
     }
 
     private func drawStaleMarker() {

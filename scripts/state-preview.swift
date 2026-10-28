@@ -4,9 +4,10 @@ import AppKit
 // Keep the user's sidebar, center icon and avatar; simulate both quota displays.
 let reference = NSImage(contentsOfFile: CommandLine.arguments[2])!
 reference.size = NSSize(width: 51, height: 229)
-let canvas = NSSize(width: 424, height: 270)
+let canvas = NSSize(width: 424, height: 302)
 let english = CommandLine.arguments.contains("--english")
 let cachedPreview = CommandLine.arguments.contains("--cached")
+let creditWarningPreview = CommandLine.arguments.contains("--credit-warning")
 func label(_ text: String, at point: NSPoint, size: CGFloat, color: NSColor) {
     NSAttributedString(string: text, attributes: [.font: NSFont.systemFont(ofSize: size, weight: .medium),
         .foregroundColor: color]).draw(at: point)
@@ -22,12 +23,15 @@ func render(phase: Double, destination: String) throws {
     context.cgContext.scaleBy(x: 2, y: 2)
     NSColor(srgbRed: 0.07, green: 0.07, blue: 0.07, alpha: 1).setFill()
     NSBezierPath(rect: NSRect(origin: .zero, size: canvas)).fill()
-    let labels = english ? ["Full", "Available", "Low", "Critical", "Empty", "No data"]
+    let labels = creditWarningPreview
+        ? (english ? ["Last 1%", "Uncertain", "Plan empty", "Billed", "Billed, idle", "Reset"]
+            : ["剩余 1%", "末段未确认", "套餐耗尽", "已扣余额", "扣费后空闲", "周期恢复"])
+        : english ? ["Full", "Available", "Low", "Critical", "Empty", "No data"]
         : ["满额", "充足", "偏低", "临界", "耗尽", "无数据"]
-    let values: [Double?] = [100, 77, 32, 12, 0, nil]
+    let values: [Double?] = creditWarningPreview ? [1, 0, 0, 0, 0, 100] : [100, 77, 32, 12, 0, nil]
     for (index, state) in Array(zip(labels, values)).enumerated() {
         let x = CGFloat(6 + index * 70)
-        label(state.0, at: NSPoint(x: x + 9, y: 245), size: 9, color: .lightGray)
+        label(state.0, at: NSPoint(x: x + 1, y: 277), size: 9, color: .lightGray)
         reference.draw(in: NSRect(x: x, y: 12, width: 51, height: 229))
         // Replace only the captured gauge using adjacent clean sidebar pixels.
         // The avatar stays intact; redraw only the native ring's progress below.
@@ -65,14 +69,24 @@ func render(phase: Double, destination: String) throws {
         }
         let view = QuotaMeterView(frame: NSRect(origin: .zero, size: QuotaMeterView.size))
         view.remainingPercent = state.1
-        view.exhaustionConfirmed = state.1 == 0 // This preview explicitly simulates an exhausted plan.
-        view.isStale = cachedPreview && state.1 != nil
-        view.phase = cachedPreview ? 0 : phase
+        view.exhaustionConfirmed = state.1 == 0 && (!creditWarningPreview || index == 2)
+        view.isSpendingCredits = creditWarningPreview && [3, 4].contains(index)
+        view.isStale = (cachedPreview || (creditWarningPreview && index == 4)) && state.1 != nil
+        view.phase = view.isStale || view.isSpendingCredits ? 0 : phase
+        let layer = NSBitmapImageRep(bitmapDataPlanes: nil,
+            pixelsWide: Int(QuotaMeterView.size.width * 2), pixelsHigh: Int(QuotaMeterView.size.height * 2),
+            bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
+            colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
+        layer.size = QuotaMeterView.size
         NSGraphicsContext.saveGraphicsState()
-        (AffineTransform(translationByX: x + BadgeLayout.avatarCenterX - BadgeLayout.size.width / 2,
-                         byY: 12 + BadgeLayout.avatarTopFromBottom + BadgeLayout.avatarGap) as NSAffineTransform).concat()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: layer)
         view.draw(view.bounds)
         NSGraphicsContext.restoreGraphicsState()
+        let rendered = NSImage(size: QuotaMeterView.size)
+        rendered.addRepresentation(layer)
+        rendered.draw(at: NSPoint(x: x + BadgeLayout.avatarCenterX - BadgeLayout.size.width / 2,
+                                  y: 12 + BadgeLayout.avatarTopFromBottom + BadgeLayout.avatarGap),
+                      from: .zero, operation: .sourceOver, fraction: 1)
     }
     NSGraphicsContext.restoreGraphicsState()
     try bitmap.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: destination))

@@ -4,13 +4,15 @@
 
 在 macOS 的 Codex 头像上方显示剩余额度。液面表示比例，数字显示百分比，窗口移动时跟随，不挡鼠标点击。
 
-当前版本 3.1.5 / build 28。
+当前版本 3.1.6 / build 29。
 
 ![QuotaDock 六种额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=f2ce9a4e8a5e)
 
 图中额度为模拟值。[查看静态图](docs/images/quota-dock-states.png)
 
 青蓝色表示剩余至少 50%，琥珀色表示 20% 到不足 50%，红色表示不足 20%。`≤1` 表示本地用量已到末段，但缺少明确的套餐耗尽标记；此时可能已在使用额外额度，不代表还能免费使用。`0` 表示回执明确报告套餐限额，`--` 表示暂时读不到有效额度。
+
+同一额度周期内观测到额外额度余额下降时，管子变红并出现断裂纹，标注“已扣费”。提醒持续到周期重置，重启也保留。它在本地回执记录到扣费后触发，不会提前预测，也不会阻止继续使用。[查看提醒效果](docs/images/quota-dock-credit-warning-states.png)。
 
 ## 构建与运行
 
@@ -62,6 +64,7 @@ bash scripts/test-app.sh
 ```sh
 ./scripts/render-states.sh --animate
 ./scripts/render-states.sh --english --animate
+./scripts/render-states.sh --credit-warning
 ```
 
 `./scripts/preview-animation.sh` 打开交互预览。`./scripts/package.sh` 执行测试、构建、签名和打包。构建产物与运行数据不提交到 Git。

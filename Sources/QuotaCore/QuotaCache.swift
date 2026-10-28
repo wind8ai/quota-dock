@@ -31,6 +31,7 @@ final class QuotaCache {
         let cached = snapshot.flatMap { $0.isUsable(at: now) ? $0 : nil }
         guard let observation = observation, observation.isUsable(at: now) else { return cached }
         guard let current = cached else { return observation }
-        return observation.observedAt >= current.observedAt ? observation : current
+        return observation.observedAt >= current.observedAt
+            ? observation.trackingCreditSpend(since: current) : current
     }
 }

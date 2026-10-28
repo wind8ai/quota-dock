@@ -32,13 +32,21 @@ Read at a minimum interval of 5 seconds while visible and 30 seconds while hidde
 
 Persist the last receipt in app preferences, scoped by session directory, and restore it after restart. Older records cannot overwrite newer ones; a failed read does not erase an in-period cache. Preserve the original observation timestamp. Reject expired or invalid values and never import quota-history-v2. Diagnostics read the cache without changing it.
 
+## Credit-debit warning
+
+Read nonnegative decimal `credits.balance` values for finite (`unlimited=false`) credit balances. A newer receipt with a lower balance within the same quota period confirms that a debit occurred. The plan percentage, `allowed`, and the presence of credits do not establish a debit. Initial, unchanged, increasing, older and equal-time balances do not trigger a new warning. Missing balances retain the last known balance within that period.
+
+Match periods by window duration and reset time, allowing up to two seconds of response-header drift. Reconstruct changes in receipt order within the existing 12-file, 2 MB-per-tail scan; the cache also compares successive polls. Persist the balance and warning through idle time, top-ups and restarts until the period changes or ends.
+
+The warning turns the tube red, clears a jagged gap across it, draws glowing fracture edges and shows “已扣费” (billed). Pause liquid animation and retain the plan number. The reminder does not stop usage. Local receipts can arrive late, so this cannot prevent the first debit. Without two comparable historical balances or a cached baseline, a later decrease is needed. Logs lack a reliable account identifier; accounts sharing a quota period can still be confused, and balance changes cannot identify the responsible chat. The warning changes no payment or account settings.
+
 ## Diagnostics
 
 ```sh
 build/QuotaDock.app/Contents/MacOS/QuotaDock --diagnose-quota
 ```
 
-Exit 0 reports local-session-log, period, last quota, display text, exhaustion confirmation, observation time and age, with recent-local-observation or cached-local-observation status. Exit 1 means no usable reading in the current period. No conversation text, filenames, email or tokens are printed.
+Exit 0 reports local-session-log, period, last quota, display text, exhaustion confirmation, debit warning, last known balance, observation time and age, with recent-local-observation or cached-local-observation status. Exit 1 means no usable reading in the current period. No conversation text, filenames, email or tokens are printed.
 
 ## Limitations
 

@@ -10,12 +10,15 @@ final class LocalQuotaReaderTests {
 
     private func event(_ used: Double = 25, at time: Double = 1000.125,
                        reset: Double = 5000, bucket: String = "codex", nested: Bool = false,
-                       reached: String? = nil) throws -> Data {
+                       reached: String? = nil, balance: String? = nil) throws -> Data {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         var limits: [String: Any] = ["limit_id": bucket, "primary": [
             "used_percent": used, "window_minutes": 10080, "resets_at": reset]]
         if let reached = reached { limits["rate_limit_reached_type"] = reached }
+        if let balance = balance {
+            limits["credits"] = ["unlimited": false, "has_credits": true, "balance": balance]
+        }
         var payload: [String: Any] = ["type": "token_count"]
         if nested { payload["info"] = ["rate_limits": limits] } else { payload["rate_limits"] = limits }
         var data = try JSONSerialization.data(withJSONObject: [
@@ -31,6 +34,34 @@ final class LocalQuotaReaderTests {
             let value = LocalQuotaReader.latest(in: root, now: Date(timeIntervalSince1970: 1001))
             precondition(value?.remainingPercent == 75)
             precondition(value?.observedAt == Date(timeIntervalSince1970: 1000.125))
+        }
+    }
+
+    func testCreditDebitIsRecoveredFromReceiptsWithoutAnotherCharge() throws {
+        try directory { root in
+            var data = try event(100, at: 1000, balance: "62500.0000000000")
+            data.append(try event(100, at: 1001, balance: "62498.5821925000"))
+            data.append(try event(100, at: 1002, balance: "62498.5821925000"))
+            try data.write(to: root.appendingPathComponent("session.jsonl"))
+            let value = LocalQuotaReader.latest(in: root, now: Date(timeIntervalSince1970: 1003))
+            precondition(value?.creditSpendDetected == true,
+                         "The first observed credit debit must trigger the warning, including after restart")
+        }
+    }
+
+    func testCreditDebitUsesReceiptOrderAndDoesNotLeakIntoNewPeriod() throws {
+        try directory { root in
+            let file = root.appendingPathComponent("session.jsonl")
+            var data = try event(100, at: 1002, balance: "99")
+            data.append(try event(100, at: 1000, balance: "100"))
+            data.append(try event(100, at: 1001))
+            try data.write(to: file)
+            precondition(LocalQuotaReader.latest(in: root,
+                now: Date(timeIntervalSince1970: 1003))?.creditSpendDetected == true)
+            data.append(try event(0, at: 1003, reset: 10000, balance: "98"))
+            try data.write(to: file)
+            precondition(LocalQuotaReader.latest(in: root,
+                now: Date(timeIntervalSince1970: 1004))?.creditSpendDetected != true)
         }
     }
 

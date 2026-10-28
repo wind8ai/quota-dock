@@ -21,6 +21,10 @@ enum LocalQuotaSource {
             report["status"] = quota.isFresh(at: now) ? "recent-local-observation" : "cached-local-observation"
             report["remainingPercent"] = quota.remainingPercent
             report["exhaustionConfirmed"] = quota.exhaustionConfirmed == true
+            report["creditSpendDetected"] = quota.creditSpendDetected == true
+            if let balance = quota.creditBalance {
+                report["lastKnownCreditBalance"] = NSDecimalNumber(decimal: balance).stringValue
+            }
             report["displayText"] = QuotaDisplayValue.text(for: quota.remainingPercent,
                 exhaustionConfirmed: quota.exhaustionConfirmed == true)
             report["period"] = quota.windowDurationMins == 300 ? "5-hour" : "weekly"

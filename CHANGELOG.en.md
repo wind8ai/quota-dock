@@ -2,6 +2,12 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.1.6 · build 29
+
+- Turn the tube red, draw a jagged fracture and show a billed label when receipts report a credit-balance decrease within the same quota period. Pause liquid animation while warning.
+- Compare decimal balances. Initial, unchanged and increasing balances do not trigger. Reconstruct debit history in receipt order; retain the warning through idle time and restarts, and clear it on a new period.
+- Add debit status and last known balance to diagnostics, regression tests for receipt order, period isolation, persistence and native rendering, plus a synthetic warning preview.
+
 ## 3.1.5 · build 28
 
 - Show `≤1` when a local receipt reports 100% used without an explicit plan-limit signal, rather than claiming exhaustion or exactly 1% remaining. Extra credits may already be charged.

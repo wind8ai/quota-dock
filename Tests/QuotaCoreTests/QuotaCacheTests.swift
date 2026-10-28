@@ -8,9 +8,43 @@ final class QuotaCacheTests {
         body(defaults)
     }
 
-    private func reading(_ value: Double = 58, observed: Double = 1000, reset: Double = 10000) -> AccountQuota {
+    private func reading(_ value: Double = 58, observed: Double = 1000, reset: Double = 10000,
+                         balance: Decimal? = nil) -> AccountQuota {
         AccountQuota(remainingPercent: value, windowDurationMins: 10080,
-            resetsAt: reset, observedAt: Date(timeIntervalSince1970: observed))
+            resetsAt: reset, observedAt: Date(timeIntervalSince1970: observed), creditBalance: balance)
+    }
+
+    func testCreditWarningSurvivesIdleTopUpMissingBalanceAndRestartUntilReset() {
+        withDefaults { defaults in
+            let cache = QuotaCache(defaults: defaults, namespace: "credits")
+            cache.update(reading(0, balance: 62500), at: Date(timeIntervalSince1970: 1000))
+            precondition(cache.current(at: Date(timeIntervalSince1970: 1000))?.creditSpendDetected != true)
+            cache.update(reading(0, observed: 1001, reset: 10001, balance: 62499),
+                         at: Date(timeIntervalSince1970: 1001))
+            precondition(cache.current(at: Date(timeIntervalSince1970: 1001))?.creditSpendDetected == true)
+            cache.update(reading(0, observed: 1002, balance: 63000), at: Date(timeIntervalSince1970: 1002))
+            cache.update(reading(0, observed: 1003), at: Date(timeIntervalSince1970: 1003))
+            let reopened = QuotaCache(defaults: defaults, namespace: "credits")
+            let idle = reopened.current(at: Date(timeIntervalSince1970: 2500))
+            precondition(idle?.creditSpendDetected == true && idle?.creditBalance == 63000)
+            reopened.update(reading(100, observed: 2600, reset: 20000, balance: 62000),
+                            at: Date(timeIntervalSince1970: 2600))
+            precondition(reopened.current(at: Date(timeIntervalSince1970: 2600))?.creditSpendDetected != true)
+        }
+    }
+
+    func testCreditWarningNeedsForwardDebitNotFirstBalanceOrStaleData() {
+        withDefaults { defaults in
+            let cache = QuotaCache(defaults: defaults, namespace: "credits")
+            cache.update(reading(0, balance: 10), at: Date(timeIntervalSince1970: 1000))
+            cache.update(reading(0, observed: 1001, balance: 10), at: Date(timeIntervalSince1970: 1001))
+            cache.update(reading(0, observed: 1002, balance: 20), at: Date(timeIntervalSince1970: 1002))
+            cache.update(reading(0, observed: 999, balance: 0), at: Date(timeIntervalSince1970: 1002))
+            precondition(cache.current(at: Date(timeIntervalSince1970: 1002))?.creditSpendDetected != true)
+            cache.update(reading(0, observed: 1003, balance: Decimal(string: "19.9999999999")),
+                         at: Date(timeIntervalSince1970: 1003))
+            precondition(cache.current(at: Date(timeIntervalSince1970: 1003))?.creditSpendDetected == true)
+        }
     }
 
     func testPersistsAcrossRestartAndSeparatesDirectories() {

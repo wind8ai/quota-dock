@@ -4,13 +4,15 @@
 
 Show remaining Codex quota above your avatar on macOS. The liquid shows the remaining share, the number shows the percentage, and the gauge follows the window without blocking clicks.
 
-Current version: 3.1.5 / build 28.
+Current version: 3.1.6 / build 29.
 
 ![QuotaDock in six quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=bc6f422990d3)
 
 Quota values are simulated. [View the static image](docs/images/quota-dock-en-states.png).
 
 Cyan means at least 50% remains, amber means 20% to below 50%, and red means below 20%. `≤1` means local usage has reached its last percentage point without an explicit plan-limit signal. Extra credits may already be in use; it does not promise more included usage. `0` means a receipt explicitly reports the plan limit; `--` means no valid reading is available.
+
+When receipts show a credit-balance decrease within the same quota period, the tube turns red, cracks across the middle and shows “已扣费” (billed). The warning survives restarts and clears on a new period. It follows recorded charges, cannot predict them and does not stop usage. [View the warning](docs/images/quota-dock-credit-warning-states.png).
 
 ## Build and run
 
@@ -62,6 +64,7 @@ Generate both preview languages with FFmpeg installed:
 ```sh
 ./scripts/render-states.sh --animate
 ./scripts/render-states.sh --english --animate
+./scripts/render-states.sh --credit-warning
 ```
 
 `./scripts/preview-animation.sh` opens an interactive preview. `./scripts/package.sh` tests, builds, signs and packages the app. Build output and runtime data stay out of Git.

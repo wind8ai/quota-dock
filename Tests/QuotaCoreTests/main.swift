@@ -2,6 +2,8 @@ import Foundation
 
 let cache = QuotaCacheTests()
 let cacheTests: [(String, () -> Void)] = [
+    ("testCreditWarningSurvivesIdleTopUpMissingBalanceAndRestartUntilReset", cache.testCreditWarningSurvivesIdleTopUpMissingBalanceAndRestartUntilReset),
+    ("testCreditWarningNeedsForwardDebitNotFirstBalanceOrStaleData", cache.testCreditWarningNeedsForwardDebitNotFirstBalanceOrStaleData),
     ("testEndpointConfirmationSurvivesRestartAndLegacyCacheStaysUncertain", cache.testEndpointConfirmationSurvivesRestartAndLegacyCacheStaysUncertain),
     ("testIdleKeepsLastReadingWithStaleStatus", cache.testIdleKeepsLastReadingWithStaleStatus),
     ("testPersistsAcrossRestartAndSeparatesDirectories", cache.testPersistsAcrossRestartAndSeparatesDirectories),
@@ -23,6 +25,7 @@ for (name, test) in refreshTests { test(); print("PASS \(name)") }
 
 let account = AccountQuotaTests()
 let accountTests: [(String, () -> Void)] = [
+    ("testCreditBalanceRequiresFiniteNonnegativeDecimal", account.testCreditBalanceRequiresFiniteNonnegativeDecimal),
     ("testOnlyExplicitPlanLimitConfirmsExhaustion", account.testOnlyExplicitPlanLimitConfirmsExhaustion),
     ("testUsesCodexBucketAndWindowDurationRatherThanPrimaryPosition", account.testUsesCodexBucketAndWindowDurationRatherThanPrimaryPosition),
     ("testWeeklyOnlyAndServerCorrectionsRemainAuthoritative", account.testWeeklyOnlyAndServerCorrectionsRemainAuthoritative),
@@ -33,6 +36,8 @@ let accountTests: [(String, () -> Void)] = [
 for (name, test) in accountTests { test(); print("PASS \(name)") }
 let local = LocalQuotaReaderTests()
 let localTests: [(String, () throws -> Void)] = [
+    ("testCreditDebitUsesReceiptOrderAndDoesNotLeakIntoNewPeriod", local.testCreditDebitUsesReceiptOrderAndDoesNotLeakIntoNewPeriod),
+    ("testCreditDebitIsRecoveredFromReceiptsWithoutAnotherCharge", local.testCreditDebitIsRecoveredFromReceiptsWithoutAnotherCharge),
     ("testLocalEndpointStaysUncertainUntilExplicitExhaustion", local.testLocalEndpointStaysUncertainUntilExplicitExhaustion),
     ("testReadsRecentLocalQuotaWithoutCLI", local.testReadsRecentLocalQuotaWithoutCLI),
     ("testNewestObservationWinsOverFileModificationAndReset", local.testNewestObservationWinsOverFileModificationAndReset),

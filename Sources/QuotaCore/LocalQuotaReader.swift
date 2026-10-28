@@ -22,6 +22,7 @@ enum LocalQuotaReader {
         }
         candidates.sort { $0.modified == $1.modified ? $0.url.path < $1.url.path : $0.modified > $1.modified }
         var newest: (date: Date, quota: AccountQuota?)?
+        var observations: [AccountQuota] = []
         for file in candidates.prefix(12) {
             guard let handle = try? FileHandle(forReadingFrom: file.url) else { continue }
             defer { handle.closeFile() }
@@ -45,12 +46,19 @@ enum LocalQuotaReader {
                       let timestamp = event["timestamp"] as? String,
                       let observed = fractional.date(from: timestamp) ?? wholeSeconds.date(from: timestamp),
                       observed <= now else { continue }
-                if newest == nil || observed > newest!.date {
-                    newest = (observed, AccountQuota.parseLimits(limits, observedAt: observed))
-                }
+                let quota = AccountQuota.parseLimits(limits, observedAt: observed)
+                if let quota = quota { observations.append(quota) }
+                if newest == nil || observed > newest!.date { newest = (observed, quota) }
             }
         }
         guard let quota = newest?.quota, quota.isUsable(at: now) else { return nil }
-        return quota
+        // Reconstruct the first debit from the bounded history, including on launch.
+        // A new quota period starts with a new baseline rather than an old warning.
+        var tracked: AccountQuota?
+        for observation in observations.filter({ $0.isSamePeriod(as: quota) })
+            .sorted(by: { $0.observedAt < $1.observedAt }) {
+            tracked = observation.trackingCreditSpend(since: tracked)
+        }
+        return quota.trackingCreditSpend(since: tracked)
     }
 }

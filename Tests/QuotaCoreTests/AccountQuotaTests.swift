@@ -32,6 +32,21 @@ final class AccountQuotaTests {
         precondition(AccountQuota.parseLimits(limits, observedAt: now)?.exhaustionConfirmed == true)
     }
 
+    func testCreditBalanceRequiresFiniteNonnegativeDecimal() {
+        let now = Date(timeIntervalSince1970: 1000)
+        var limits = legacy(100)
+        limits["credits"] = ["unlimited": false, "balance": "62498.5821925000"]
+        precondition(AccountQuota.parseLimits(limits, observedAt: now)?.creditBalance
+                     == Decimal(string: "62498.5821925000"))
+        for invalid in ["", "NaN", "-1", "12oops", "1e2"] {
+            limits["credits"] = ["unlimited": false, "balance": invalid]
+            let quota = AccountQuota.parseLimits(limits, observedAt: now)
+            precondition(quota != nil && quota?.creditBalance == nil)
+        }
+        limits["credits"] = ["unlimited": true, "balance": "62500"]
+        precondition(AccountQuota.parseLimits(limits, observedAt: now)?.creditBalance == nil)
+    }
+
     func testRejectsInvalidExpiredAndUnsupportedWindows() {
         let now = Date(timeIntervalSince1970: 1000)
         for used: Any in [true, "29", Double.nan, Double.infinity, -1] {
