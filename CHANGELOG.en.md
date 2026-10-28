@@ -2,6 +2,11 @@
 
 [中文](CHANGELOG.md) | **English**
 
+## 3.1.4 · build 27
+
+- Move the gauge up another 32 pt to clear the update button and its tooltip above the avatar, keeping the remaining-quota number visible.
+- Keep the 36 × 104 pt size and horizontal position. Update layout regression tests and positioning documentation in both languages.
+
 ## 3.1.3 · build 26
 
 - Keep the last quota after 15 idle minutes, mark it with a small clock and pause bubbles instead of clearing it.

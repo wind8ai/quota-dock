@@ -4,7 +4,7 @@
 
 ## Window placement
 
-The gauge is 36 × 104 pt. Its center is 26 pt from the target window's left edge, and its bottom is 70 pt above the avatar. Panel offsets are 8 pt from the left and 107 pt from the bottom: 18 pt higher than 3.0.8, leaving roughly 20 pt of visual separation from the native usage ring in the current layout. Numbers use a white monospaced heavy font with a diffuse black shadow (4 pt blur radius) up to 15 pt directly over the liquid without a background plate; longer values shrink to fit. Cyan means at least 50%, amber means 20% to below 50%, red means below 20%, and unavailable readings use a neutral gray outline.
+The gauge is 36 × 104 pt. Its center is 26 pt from the target window's left edge, and its bottom is 102 pt above the avatar. Panel offsets are 8 pt from the left and 139 pt from the bottom, another 32 pt higher than 3.1.3 to clear the native usage ring, update button and update tooltip. Numbers use a white monospaced heavy font with a diffuse black shadow (4 pt blur radius) up to 15 pt directly over the liquid without a background plate; longer values shrink to fit. Cyan means at least 50%, amber means 20% to below 50%, red means below 20%, and unavailable readings use a neutral gray outline.
 
 The target must be an on-screen normal-level window owned by `ChatGPT` or `Codex`, at least 800 pt wide and 600 pt tall. Floating mini/pet windows are excluded. The gauge hides when no main window is found. These offsets match the current account-bar layout; future layout changes may require an update to `Sources/QuotaCore/BadgeLayout.swift`.
 

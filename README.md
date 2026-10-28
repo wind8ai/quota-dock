@@ -4,7 +4,7 @@
 
 在 macOS 的 Codex 头像上方显示剩余额度。液面表示比例，数字显示百分比，窗口移动时跟随，不挡鼠标点击。
 
-当前版本 3.1.3 / build 26。
+当前版本 3.1.4 / build 27。
 
 ![QuotaDock 六种额度状态](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock.gif?v=f2ce9a4e8a5e)
 

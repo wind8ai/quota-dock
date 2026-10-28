@@ -4,7 +4,7 @@
 
 Show remaining Codex quota above your avatar on macOS. The liquid shows the remaining share, the number shows the percentage, and the gauge follows the window without blocking clicks.
 
-Current version: 3.1.3 / build 26.
+Current version: 3.1.4 / build 27.
 
 ![QuotaDock in six quota states](https://raw.githubusercontent.com/wind8ai/quota-dock/main/docs/images/quota-dock-en.gif?v=bc6f422990d3)
 
